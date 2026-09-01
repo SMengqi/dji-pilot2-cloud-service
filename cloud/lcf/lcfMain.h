@@ -35,6 +35,7 @@ private:
 private:
     std::string m_mqttConfigPath   { "mqtt_config.json" };
     std::string m_deviceConfigPath { "device_config.json" };
+    std::string m_xmlConfig { "高精地图.xml" };
 };
 
 #endif /*LCFMAIN_H_*/

@@ -7,6 +7,7 @@
 #include "bxt_mqtt_config.pb.h"
 #include "bxt_cloud_common.pb.h"
 #include "pl_utils.h"
+#include "pf_map_block_3d.h"
 
 #include <unistd.h>
 #include <string>
@@ -101,6 +102,16 @@ bool LcfMain::loadMqttConfig()
 
 bool LcfMain::loadDeviceConfig()
 {
+    // 地图加载失败不应阻断设备配置/MQTT配置加载，两者是独立的关注点；
+    // 但仍需尝试加载，flytoController::check_block_around_line_lonlat 等障碍物检测依赖这份数据。
+    std::string mapFile = "." + std::string(CONFIG_BOOTUP_PATH) + m_xmlConfig;
+    S32 mapRet = get_map_info((char*)mapFile.c_str());
+    if (mapRet != RET_OK) {
+        pl_log(ERR, "加载3D地图文件: %s 失败 | ret: %d，障碍物检测将拿不到真实地图数据", mapFile.c_str(), mapRet);
+    } else {
+        pl_log(INF, "加载3D地图文件: %s 成功", mapFile.c_str());
+    }
+
     std::string strDeviceConfig = read_json_Config_file(m_deviceConfigPath);
     if (strDeviceConfig.empty()) {
         pl_log(ERR, "读取设备配置文件失败 | 路径: %s", m_deviceConfigPath.c_str());
