@@ -7,7 +7,6 @@
 #include "bxt_mqtt_config.pb.h"
 #include "bxt_cloud_common.pb.h"
 #include "pl_utils.h"
-#include "pf_map_block_3d.h"
 
 #include <unistd.h>
 #include <string>
@@ -100,17 +99,8 @@ bool LcfMain::loadMqttConfig()
     return true;
 }
 
-bool LcfMain::loadDeviceConfig() 
-{    
-    // sleep(2); // 确保文件系统稳定
-    std::string mapFile = "." + std::string(CONFIG_BOOTUP_PATH) + m_xmlConfig;
-    S32 ret = get_map_info((char*)mapFile.c_str());
-    if (ret != RET_OK) {
-        pl_log(ERR, "加载3D地图文件: %s 失败 | ret: %d", mapFile.c_str(), ret);
-        return false;
-    }
-    pl_log(INF, "加载3D地图文件: %s 成功", mapFile.c_str());
-
+bool LcfMain::loadDeviceConfig()
+{
     std::string strDeviceConfig = read_json_Config_file(m_deviceConfigPath);
     if (strDeviceConfig.empty()) {
         pl_log(ERR, "读取设备配置文件失败 | 路径: %s", m_deviceConfigPath.c_str());
