@@ -1,0 +1,22 @@
+SYS_TIME =$(shell date +%Y/%m/%d-%H:%M:%S;)
+SYS_TIME += "for\ DRC"
+COMMONFLAGS += -DWITH_LOG
+COMMONFLAGS += -D_LINUX_
+
+CXXFLAGS += $(COMMONFLAGS)
+CXXFLAGS += -DLINUX_BUILD
+CXXFLAGS += -DDRF_PROCESS
+
+CFLAGS   += $(COMMONFLAGS)
+CFLAGS   += -DLINUX_BUILD
+CFLAGS   += -DDRF_PROCESS
+
+LINUX_PL          = y
+BUILDNAME         = drf_pl
+BUILDCOMMON       = drf
+
+PLATFORMLIB       = y
+
+BLDVERSION        = v1
+BUILD_DIR         = $(PSROOT)/build_$(BUILDCOMMON)/obj
+

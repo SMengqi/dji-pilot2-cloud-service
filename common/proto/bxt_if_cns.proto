@@ -1,0 +1,40 @@
+syntax = "proto3";
+package if_cns;
+
+import "bxt.uav.proto";
+
+message startupreq {
+    if_proto_uav.Head head = 1; //必须
+    if_proto_uav.StartupData data = 2; //必须
+}
+
+message startuprsp {
+    if_proto_uav.Head head = 1;  //必须
+    if_proto_uav.StartupRspData data = 2; //必须
+    string token = 3;  //必须
+}
+
+message flyinfo {
+    if_proto_uav.Head head = 1;  //必须
+    if_proto_uav.FlightData data = 2;  //必须
+    if_proto_uav.Extra extra = 3;
+    string token = 4;  //必须
+}
+
+message heartbeatreq {
+    if_proto_uav.Head head = 1;  //必须
+    if_proto_uav.HeartBeatData data = 2;  //必须
+    string token = 3;  //必须
+}
+
+message heartbeatrsp {
+    if_proto_uav.Head head = 1;  //必须
+    if_proto_uav.HeartBeatRspData data = 2;  //必须
+    string token = 3;  //必须
+}
+
+message controlcommand {
+    if_proto_uav.Head head = 1;  //必须
+    if_proto_uav.controlCommandData data = 2; //必须
+    string token = 3;  //必须
+}

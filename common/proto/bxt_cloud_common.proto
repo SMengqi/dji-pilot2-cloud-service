@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package bxt_cloud_common;
+
+enum REST_MODE_E {
+    //回中
+    REST_MODE_CENTER = 0;
+    // 向下
+    REST_MODE_DOWN = 1;
+    // 偏航回中
+    REST_MODE_YAW_CENTER = 2;
+    // 俯仰向下
+    REST_MODE_PITCH_DOWN = 3;
+}
+
+message camera_message {
+    string payload_index = 1;
+    string aim_camera_type = 2;
+    string zoom_camera_type = 3;
+    REST_MODE_E reset_mode = 4;
+
+}
+
+enum RTH_MODE_E {
+    // 智能高度
+    SMART_HEIGHT = 0;
+    // 设定高度
+    SET_HEIGHT = 1;
+}
+
+enum RC_LOST_ACTION_E {
+    // 悬停
+    STAY = 0;
+    // 着陆(降落)
+    LAND = 1;
+    // 返航
+    RETURN = 2;
+}
+
+enum COMMANDER_MODE_LOST_ACTION_E {
+    // 继续执行指点飞行任务
+    CONTINUE = 0;
+    // 退出指点飞行任务，执行普通失控行为
+    ABORT = 1;
+}
+
+enum COMMANDER_FLIGHT_MODE_E {
+    // 智能高度飞行
+    SMART_HEIGHT_FLIGHT = 0;
+    // 设定高度飞行
+    SET_HEIGHT_FLIGHT = 1;
+}
+
+enum IS_ENABLE_E {
+    // 不开启
+    DISABLE = 0;
+    // 开启
+    ENABLE = 1;
+}
+
+enum TASK_TYPE_E { 
+    // 立即任务
+    IMMEDIATELY = 0;
+    // 定时任务
+    SCHEDULED = 1;
+    // 条件任务
+    CONDITIONAL = 2;
+}
+
+enum OUT_OF_CONTROL_ACTION_E {
+    // 返航
+    OUT_OF_CONTROL_RETURN = 0;
+    // 悬停
+    OUT_OF_CONTROL_STAY = 1;
+    // 降落
+    OUT_OF_CONTROL_LAND = 2;
+}
+
+enum EXIT_WAYLINE_WHEN_RC_LOST_E {
+    // 继续执行航线任务
+    EXIT_WAYLINE_CONTINUE = 0;
+    // 退出航线任务，执行遥控器失控动作
+    EXIT_WAYLINE_ABORT = 1;
+}
+
+enum WAYLINE_PRECISION_TYPE_E { // 
+    // GPS 任务
+    WAYLINE_PRECISION_GPS = 0;
+    // 高精度 RTK 任务
+    WAYLINE_PRECISION_RTK = 1;
+}
+
+enum FLIGHT_SAFETY_ADVANCE_CHECK_E { // 
+    // 关闭
+    FLIGHT_SAFETY_DISABLE = 0;
+    // 开启
+    FLIGHT_SAFETY_ENABLE = 1;
+}
+
+message takeoff_message {
+    RTH_MODE_E rth_mode = 1;
+    uint32 rth_altitude = 2;
+    RC_LOST_ACTION_E rc_lost_action = 3;
+    COMMANDER_MODE_LOST_ACTION_E commander_mode_lost_action = 4;
+    COMMANDER_FLIGHT_MODE_E commander_flight_mode = 5;
+    uint32 commander_flight_height = 6;
+    uint32 max_speed = 7;
+    FLIGHT_SAFETY_ADVANCE_CHECK_E flight_safety_advance_check = 8;
+}
+
+message waypoint_message {
+    TASK_TYPE_E task_type = 1;
+    uint32 rth_altitude = 2;
+    RTH_MODE_E rth_mode = 3;
+    OUT_OF_CONTROL_ACTION_E out_of_control_action = 4;
+    EXIT_WAYLINE_WHEN_RC_LOST_E exit_wayline_when_rc_lost = 5;
+    WAYLINE_PRECISION_TYPE_E wayline_precision_type = 6;
+    FLIGHT_SAFETY_ADVANCE_CHECK_E flight_safety_advance_check = 7;
+}
+
+message simulate_message {
+    IS_ENABLE_E is_enable = 1;
+    double longitude = 2;
+    double latitude = 3;
+    double altitude = 4;
+}
+
+message common_message {
+    string aircraft_sn = 1;
+    string dock_sn = 2;
+    camera_message camera = 3;
+    takeoff_message takeoff = 4;
+    waypoint_message waypoint = 5;
+    simulate_message simulate = 6;
+}

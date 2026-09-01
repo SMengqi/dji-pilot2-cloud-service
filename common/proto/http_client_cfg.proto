@@ -1,0 +1,10 @@
+syntax = "proto3";
+package http_client;
+
+message http_client_cfg
+{
+    string s_ip = 1;
+    string s_port = 2;
+    string s_url = 3;
+	string device_id = 4;
+}

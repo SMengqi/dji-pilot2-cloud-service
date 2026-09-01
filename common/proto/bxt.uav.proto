@@ -1,0 +1,320 @@
+syntax = "proto3";
+package if_proto_uav;
+
+//import "bxt.common.math.Vector3d.proto";
+//import "bxt.common.math.point.proto";
+
+enum MsgId {
+    MSG_ID_UNKNOWN = 0;
+    MSG_ID_STARTUP_REQ = 50001;//开机上报数据及获取鉴权码和虚拟ID
+    MSG_ID_HEARTBEAT_REQ = 50002;  //数据链路心跳保活
+    MSG_ID_FLIGHT_DATA_REQ = 50003;     //飞行数据实时上报
+    MSG_ID_CAMERA_CONTROL_REQ = 50004;    //云台相机控制
+    MSG_ID_COMMAND_REQ = 50005;       //程控飞行命令下发
+    MSG_ID_STARTUP_RSP = 60001;//开机上报数据及获取鉴权码和虚拟ID响应消息
+    MSG_ID_HEARTBEAT_RSP = 60002;  //数据链路心跳保活响应消息
+    MSG_ID_COMMAND_CTRL = 60003;
+    MSG_ID_CAMERA_CONTROL_RSP = 60004;    //云台相机控制响应消息
+    MSG_ID_COMMAND_RSP = 60005;       //程控飞行命令下发响应消息
+    MSG_ID_LADAR_REGIST_REQ = 80001;
+    MSG_ID_LADAR_REGIST_RSP = 80002;
+    MSG_ID_LADAR_INFO_REPORT = 80003;
+}
+
+
+enum StartupCodeId {
+    STARTUP_CODE_ID_UNKNOWN = 0;
+    STARTUP_CODE_ID_NORMAL_RSP = 1001;            //正常
+    STARTUP_CODE_ID_SYSTEM_ERROR_RSP = 1002;      //系统错误
+    STARTUP_CODE_ID_PARAM_ERROR_RSP = 1003;       //上报数据参数异常
+    STARTUP_CODE_ID_UAV_OUTSIDE_RSP = 1004;       //无人机未在系统内
+    STARTUP_CODE_ID_UAV_DISABLE_RSP = 1005;       //无人机已被平台禁用
+    STARTUP_CODE_ID_UAV_UNSUPPORT_RSP = 1006;     //平台暂不支持该型号无人机
+}
+
+enum HeartBeatId {
+    HEARTBEAT_ID_UNKNOWN = 0;
+    HEARTBEAT_ID_NORMAL_RSP = 2001;               //正常
+    HEARTBEAT_ID_TOKEN_ERROR_RSP = 2002;          //鉴权码有误
+}
+
+enum MsgTarget{
+    MSG_TARGET_UNKNOWN = 0;
+    MSG_TARGET_CHINA_MOBILE_LINGYUN = 1;
+    MSG_TARGET_AIRBORNE_TERMINAL = 2;
+    MSG_TARGET_GROUND_TERMINAL = 3;
+}
+
+//都是必须
+message Head {
+    int32 msg_id = 1;    //消息编号,消息接收方根据该编号区分消息类型
+    int32 msg_no = 2;    //消息序号.发送方序号依次递增,接收方响应序号与请求序号相同
+    int32 res = 3;       //消息目标， 1.中移凌云 2.机载终端 3.地面终端
+    int32 des = 4;       //消息目标， 1.中移凌云 2.机载终端 3.地面终端
+    int64 timestamp = 5; //UNIX时间戳, 单位毫秒	
+}
+
+	
+
+
+
+message StartupData {
+    string Version = 1;          //目前使用的协议版本
+    int32 WaypointVer = 2;       //航线版本号 1:版本1，2:版本2
+	//必须
+    string DeviceId = 3;         //物理设备号		字符串	物理ID的格式为{无人机物理设备号}/{哈勃SN号}，如无人机暂无物理设备号，使用00000/{哈勃SN码}，如无人机暂未接入哈勃，使用{无人机物理设备号}/00000 
+    string ManufactureID = 4;    //制造商统一社会信用代码		字符串	统一社会信
+    string Model = 5;            //无人机的型号
+    int32 Battery = 6;           //电池电量百分比，如为百分之87，报送87	/	百分数转换成小数保留2位
+    int32 Endurance = 7;         //剩余续航时间 单位：分钟
+    int32 Satellite = 8;         //GPS搜星数量
+    int32 Coordinate = 9;        //坐标系 1：WGS-84 2:CGCS2000 3:GLONASS-PZ90
+    uint32 Longitude = 10;       //经度,定点数,精确到小数点后 7 位,乘 10 的 7 次方后传输
+    uint32 Latitude = 11;        //纬度,定点数,精确到小数点后 7 位,乘 10 的 7 次方后传输
+    uint32 Height = 12;          //对地高度，定点数，精确到小数点后 1位，乘 10后传输
+    uint32 Altitude = 13;        //海拔高度，定点数，精确到小数点后 1位，乘 10后传输
+    int32 EnableLiveStream = 14; //是否自动下发推流地址，1：下发，0: 不下发
+    string pushUrl = 15;         //下发的rtmp推流地址
+}
+
+
+message StartupRspData {
+	//必须
+    int32 Code = 1;              //响应代码
+    string OrderID = 2;          //飞行记录编号,随机8位数字+YYYYMMDD+随机8位数字
+	//必须
+    string UASID = 3;            //平台虚拟ID,UAS+8位数字
+    string DeviceId = 4;         //物理设备号
+}
+
+//必须
+message HeartBeatData {
+    string UASID = 1;            //平台虚拟ID,UAS+8位数字
+    int32 Count = 2;             //对齐无人机心跳包count  收到平台响应，无人机就继续发送原数字，未收到响应的情况下次发送在原数字上加1  
+}
+//必须
+message HeartBeatRspData {
+    int32 Count = 1;             //对齐无人机心跳包count  收到平台响应，无人机就继续发送原数字，未收到响应的情况下次发送在原数字上加1  
+    int32 Code = 2;              //响应消息的状态码
+}
+
+		
+
+
+message FlightData {
+	//必须
+    string UASID = 1;            //平台虚拟ID,UAS+8位数字
+    string ManufactureID = 2;    //制造商统一社会信用代码		字符串	统一社会信
+    string OrderID = 3;          //飞行记录编号,随机8位数字+YYYYMMDD+随机8位数字
+	//必须
+    int32 TimeStamp = 4;         //时间戳 北京时间 14位数字（YYYYMMDDh-hmmss）。不 使 用24：00：00
+	//必须
+    int32 GS = 5;                  //速度，定点数，单位：米/秒 精确到小数点后 1位，乘 10后传输
+	//必须
+    int32 Course = 6;              //航向角，定点数，范围为(-180,180]，若不报送，则报送默认值-1 单位：度 精确到小数点后 1位，乘 10后传输
+
+    int32 Coordinate = 7;        //坐标系 1：WGS-84 2:CGCS2000 3:GLONASS-PZ90
+	//必须
+    uint32 Longitude = 8;        //经度,定点数,精确到小数点后 7 位,乘 10 的 7 次方后传输
+	//必须
+    uint32 Latitude = 9;         //纬度,定点数,精确到小数点后 7 位,乘 10 的 7 次方后传输
+	//必须
+    uint32 Height = 10;          //对地高度，定点数，精确到小数点后 1位，乘 10后传输
+	//必须
+    uint32 Altitude = 11;        //海拔高度，定点数，精确到小数点后 1位，乘 10后传输
+    int32 FlightTime = 12;       //已经飞行的时间，单位：秒
+}
+
+
+
+
+
+message Extra {
+    int32 Battery = 1;           //电池电量，电池电量百分比，如为百分之87，报送87
+    int32 Endurance = 2;         //剩余续航时间
+    int32 Satellite = 3;         //GPS搜星数量
+    string Mode = 4;             //飞行模式,STOPED，IN-AIR，ON-GROUND，TAKE-OFF,GO-HOME,LANDING，JOY-STICK，IN-WAY
+    string CameraMode = 5;       //相机模式,video/photo 照相或者摄像模式
+    string CameraStatus = 6;     //相机状态,照相模式是single单拍，multiple连拍，摄像模式是recording录像/nullRecording不在录像
+    int32 ContinuousNumber = 7;  //连拍张数
+    int32 ExposureMode = 8;      //曝光模式
+    int32 ISO = 9;               //感光度
+    int32 EV = 10;               //曝光度
+    int32 Shutter = 11;          //快门速度
+    int32 Zoom = 12;             //镜头的缩放倍数，对于中心点缩放
+    int32 Aperture = 13;         //光圈值
+    int32 ControlMode = 14;      //控制模式,0为遥控器控制，1为虚拟摇杆
+    int32 Pitich = 15;           //无人机俯仰角，保留一位小数，乘以10传输
+    int32 Roll = 16;             //无人机翻滚角，保留一位小数，乘以10传输	
+    int32 GimbalPan = 17;        //云台偏航角,保留一位小数，乘以10传输
+    int32 GimbalTilt = 18;       //云台俯仰角,保留一位小数，乘以10传输保留一位小数，乘以10传输
+    int32 GimbalRoll = 19;       //云台翻滚角,保留一位小数，乘以10传输，如为2轴载荷，传0
+    int32 ForcedLanding = 20;    //是否达到强制降落标准，0未达到，1已达到，如没有降落检测机制，不用提供
+    int32 Wpnumber = 21;         //当前航点数，第一个航点为1，没有到第一个航点为0或者不传，在航点途中未到下一个点位，传上一点，既在第一个航点到第二航点之间传1
+    int32 ActionNum = 22;        //当前动作序号,动作从1开始计数，第一个航点的第一个动作为101，第二个动作为102，若没动作传0或者不传
+    int32 LineId = 23;
+    string MegaphoneVolum = 24;  //喊话器音量,字符串,1-100
+}
+
+message GimbalCommonData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+}
+
+message GimbalAngleData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 Angle = 3;             //角度转向，单位：度
+    int32 Time = 4;              //转向时间，单位：秒钟
+}
+
+message GimbalZoomData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 Zoom = 3;              //缩放倍数
+}
+
+message GimbalCameraData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    string PhotoMode = 3;        //拍照模式，单拍Single,连拍Multiple
+    int32 ExposureMode = 4;      //曝光模式
+    int32 ISO = 5;               //ISO
+    int32 EV = 6;                //曝光值
+    int32 Shutter = 7;           //快门
+    int32 ContinuousNumber = 8;  //连拍张数
+    int32 Zoom = 9;              //缩放倍数
+    int32 Aperture = 10;         //光圈值
+}
+
+
+message GimbalModeData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 Mode = 3;              //0代表照相模式，1代表摄像模式
+}
+
+message GimbalDisplayData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 DisplayMode = 3;       //显示模式
+}
+
+message GimbalTextData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    string Text = 3;             //喊话器播放文字
+}
+/*
+message GimbalVolumeData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 Volume = 3;            //音量大小数值 0-10范围
+}
+
+message GimbalVolumeData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    string Bytes = 3;            //喊话器播放的MP3文件转为byte数组后通过ISO_8859_1编码方式转为字符串，使用时请先将字符串通过ISO_8859_1编码防暑转为byte数组
+    int32 PlayType = 4;          //播放类型，0位录音，1位即时语音 
+}*/
+
+
+
+message GimbalData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 Angle = 3;               //角度转向，单位：度
+    int32 Time = 4;                //转向时间，单位：秒钟
+    int32 Zoom = 5;              //缩放倍数
+    string PhotoMode = 6;        //拍照模式，单拍Single,连拍Multiple
+    int32 ExposureMode = 7;      //曝光模式
+    int32 ISO = 8;               //ISO
+    int32 EV = 9;                //曝光值
+    int32 Shutter = 10;          //快门
+    int32 ContinuousNumber = 11; //连拍张数
+    //  int32 Zoom = 12;             //缩放倍数
+    int32 Aperture = 13;         //光圈值
+    int32 Mode = 14;             //0代表照相模式，1代表摄像模式
+    int32 DisplayMode = 15;      //显示模式
+    string Text = 16;            //喊话器播放文字
+    int32 Volume = 17;           //音量大小数值 0-10范围
+    string Bytes = 18;           //喊话器播放的MP3文件转为byte数组后通过ISO_8859_1编码方式转为字符串，使用时请先将字符串通过ISO_8859_1编码防暑转为byte数组
+    int32 PlayType = 19;         //播放类型，0位录音，1位即时语音 
+}
+
+
+
+
+message ParamListData {
+    string ParamId = 1;          //动作参数编码
+    string Value = 2;            //参数值
+}
+
+
+
+message ActionListData {
+    int32 ActionNum = 1;          //航点动作顺序号，定点数，动作从1开始计数，第一个航点的第一个动作为101，第二个动作为102，若没动作传0或者不传
+    string ActionId = 2;          //动作编码
+    ParamListData ParamList = 3;  //参数值列表
+}
+
+
+message PointData {
+    int32 Height = 1;            	//高度        
+    int32 Latitude = 2;                  //纬度
+    int32 Longitude = 3;                 //经度    
+    int32 Speed = 4;                     //单个航点速度
+    ActionListData ActionList = 5;       //动作列表
+}
+
+
+message SubLineData {
+    int32 StartWpNumber = 1;            	//起始航点序号       
+    int32 StartHeight = 2;               //起始点高度
+    int32 StartLatitude = 3;             //起始点纬度   
+    int32 StartLongitude = 4;            //起始点经度
+    int32 EndWpNumber = 5;               //终止航点序号 
+
+
+    int32 EndLatitude = 6;               //终止航点纬度
+    int32 EndLongitude = 7;              //终止航点经度
+    int32 EndHeight = 8;                 //终止点高度   
+    int32 Speed = 9;                     //航点速度
+    ActionListData ActionList = 10;      //航点动作列表，航点动作数据
+
+}
+
+
+
+
+message WaypointData {
+    int32 MissionType = 1;       //任务类型
+    string MissionId = 2;        //作业ID
+    int32 WaypointVer = 3;       //航线版本
+    int32 ConnLostPlan = 4;      //断网措施,定点数 1: 返航，2:悬停，3：完成剩余航线 
+    int32 FinishPlan = 5;        //飞行结束后措施
+    int32 ReturnHeight = 6;      //返航高度
+    int32 ReturnSpeed = 7;       //返航速度
+    int32 GS = 8;                //速度 
+    int32 ResetCamera = 9;       //在每段航线开始复位摄像头，定点数 1:开启，2:关闭
+    int32 LineId = 10;           //航线id
+  
+    PointData Points = 11;        //点集
+    SubLineData SubLine = 12;     //航线段
+
+}
+
+
+enum CtrlCommand
+{
+    CTRL_COMMAND_UNKNOWN = 0;
+    CTRL_COMMAND_HOVER = 1;         //悬停
+    CTRL_COMMAND_MOVEON = 2;        //继续前进
+    CTRL_COMMAND_RETURN_FLIGHT = 3; //返航
+}
+
+message controlCommandData {
+	int32 Code = 1;      // 1,悬停   2，继续前进    3，返航
+}
+

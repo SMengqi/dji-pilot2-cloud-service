@@ -1,0 +1,21 @@
+syntax = "proto2";
+package cns_nacos_config;
+
+message nacos_config
+{
+    optional string str_nacos_ip = 1;   //nacos ip address
+    optional string str_nacos_namespace = 2; //nacos port
+    optional string str_nacos_group = 3; //nacos group
+    optional string str_instance_name = 4; //服务实例名,订阅的服务名称, 默认为CNS_SERVICE
+}
+
+
+message local_config
+{
+    optional uint32 cns_global_id = 1;   //cns global id
+    optional nacos_config st_nacos_config = 2;  //nacos config
+    optional string str_local_ip = 3;
+    optional string str_adapter_name = 4;   //创建Server\Client 的网卡名
+}
+
+

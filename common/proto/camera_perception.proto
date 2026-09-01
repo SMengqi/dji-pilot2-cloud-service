@@ -1,0 +1,54 @@
+syntax = "proto2";
+
+message camera_real_time_pro
+{
+	required bytes CameraCode = 1;
+	required int64 TimeStamp = 2;
+	required int32 DataType = 3;
+	required bytes Channel = 4;
+	optional int32 PixelCorrectionValid = 5;
+	optional int32 PixelCorrectionX = 6;
+	optional int32 PixelCorrectionY = 7;
+	optional int64 SendTimestamp = 8;
+ 
+	message Object
+	{
+		required int32 ObjectID = 1;
+		required int32 ObjectType = 2;
+		optional int32 TypeConfidence = 3;
+		message BoundingBox
+		{
+			required int32 LeftTopX = 1;
+			required int32 LeftTopY = 2;
+			required int32 RightBtmX = 3;
+			required int32 RightBtmY = 4;
+		}
+		optional BoundingBox WholeBBox = 4;
+		optional BoundingBox PartBBox = 5;
+		optional int32 Length = 6;
+		optional int32 Width = 7;
+		optional int32 Height = 8;
+		optional bytes VehicleClass = 9;
+		optional int32 VehicleColor = 10;
+		optional int32 VehicleBrand = 11;
+		optional bytes VehicleModel = 12;
+		optional bytes VehicleStyles = 13;
+		optional int32 VehicleLight = 14;
+		optional int32 SpecialVehicleClass = 15;
+		optional int32 VehicleConfidence = 16;
+		optional bytes PlateNo = 17;
+		optional int32 PlateClass = 18;
+		optional int32 PlateColor = 19;
+		optional BoundingBox PlateBBox = 20;
+		optional int32 PlateConfidence = 21;
+		optional int32 LaneNo = 22;
+		optional int32 SceneClass = 23;
+		optional int32 TrackStatus=24;
+		optional float Theta = 25;
+		optional float UtmX = 26;
+		optional float UtmY = 27; 
+	}
+	repeated Object Objects = 9;
+	optional int64 DraRecvTimestamp = 10;
+	optional int64 DraSendTimestamp = 11;
+}

@@ -1,0 +1,22 @@
+SYS_TIME =$(shell date +%Y/%m/%d-%H:%M:%S;)
+SYS_TIME += "for\ CLOUD"
+COMMONFLAGS += -DWITH_LOG
+COMMONFLAGS += -D_LINUX_
+
+CXXFLAGS += $(COMMONFLAGS)
+CXXFLAGS += -DLINUX_BUILD
+CXXFLAGS += -DCLOUD_PROCESS
+
+CFLAGS   += $(COMMONFLAGS)
+CFLAGS   += -DLINUX_BUILD
+CFLAGS   += -DCLOUD_PROCESS
+
+LINUX_PL          = y
+BUILDNAME         = cloud
+BUILDCOMMON       = cloud
+
+PLATFORMLIB       = y
+
+BLDVERSION        = v1
+BUILD_DIR         = $(PSROOT)/build_$(BUILDCOMMON)/obj
+

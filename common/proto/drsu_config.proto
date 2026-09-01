@@ -1,0 +1,49 @@
+syntax = "proto2";
+package drsu_config;
+
+message drsuBasicConfig {
+    required string DrsuName = 1;
+    required uint32 DrsuSysId = 2;
+    required string DrsuSoftWareVersionNo = 3;
+    required string DrsuSoftWarePath = 4;
+    required string DrsuMacAddr = 5;
+    required string DrsuIPv4 = 6;
+    required uint32 DrsuCtrlPort = 7;
+    required uint32 DrsuDataPort = 8;
+    
+    required string DrsuHDMapVersionNo = 9;
+    required uint32 DrsuPeriodOfDataRpt = 10;
+    required uint32 DrsuPeriodOfAlarmRpt = 11;
+    
+    required string DrcIPv4 = 12;
+    required uint32 DrcCtrlPort = 13;
+    required uint32 DrcDataPort = 14;
+    required uint32 DrcSysId = 15;
+    
+    required uint32 DrsuAffinityCpuID = 17;
+    required uint32 DrsuSaveFusionData = 18;    
+}
+message pointUTM {
+    optional double x = 1;
+    optional double y = 2;
+    optional double z = 3;
+}
+message yawPatchRoll {
+    optional double yaw = 1;
+    optional double patch = 2;
+    optional double roll = 3;
+}
+
+message DrsuConfig {
+    
+    required drsuBasicConfig BasicCfg = 1;
+    
+    required string DrsuHDMapPath = 2;
+    required uint32 DrsuForwardDist = 3;
+    required uint32 DrsuBackDist = 4;
+    required uint32 DrsuFusionRate = 5;
+    
+    required string DrsuAiResourcesPath = 6;
+    required pointUTM GPSUTM = 7;
+    required yawPatchRoll YawPatchRoll = 8;
+}

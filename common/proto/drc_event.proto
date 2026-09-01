@@ -1,0 +1,541 @@
+syntax = "proto2";
+package drc_event;
+
+//import "if_proto_common.proto";
+
+
+message jam_lane_info
+{
+    optional uint32 ulLaneLimitSpeed = 1; //KM/h
+    optional uint32 ulFluentSpeed = 2; //KM/h
+    optional uint32 ulBasicFluentSpeed = 3; //KM/h
+    optional uint32 ulLightJamSpeed = 4; //KM/h
+    optional uint32 ulModerateJamSpeed = 5; //KM/h
+}
+
+message event_cfg
+{
+	optional uint32 ulevent_type = 1;
+	optional uint32 ultrack_match_threshold = 2;//1m
+	optional uint32 ulmerge_threshold = 3;//20m
+	optional uint32 ulupdate_threshold = 4;//20m
+	optional uint32 ulswitch = 5;
+	repeated uint32 auldrsu_list = 6; //不用了
+	optional uint32 ulevent_undectect_num = 7;  //周期数：event_cfg_file：ulevent_anaylize_duration的整数倍，默认是20
+	optional int32  slEventRadius = 8; //影响范围
+}
+
+message shield_info 
+{
+    optional uint32 uldrsu_id = 1;   //设备ID
+    optional string start_time = 2;  //开始时间，默认00:00:00 , 时:分:秒 , 时间24小时制 , 开始时间要小于结束时间, 如果错误配置不生效
+    optional string end_time = 3;    //结束时间, 默认23:59:59 , 时:分:秒 , 时间24小时制 , 结束时间要大于开始时间，如果错误则配置不生效
+}
+
+message VEHICLE_CONVERSE_RUNNING_WARNING  //车辆逆行 6
+{
+	optional event_cfg astEventCfg = 1;
+	optional double dbVelConverseDisThres = 2;     //Vehicle converse run distance threshold
+    optional uint32 ulspeed_converse_event_duration_thres = 3;
+    repeated shield_info drsu_shield_list = 4;
+}
+
+
+message VIOLATION_PERSON_WARNING  //违规行人 7
+{
+	optional event_cfg astEventCfg = 1;
+    optional double dbPersonWarningThetaThres = 2;     //rctp
+    optional double dbPersonWarningDisThres = 3;       //rctp
+    optional uint32 ulViolationPersonRelieveThres = 4; //rctp
+    repeated shield_info drsu_shield_list = 5;
+}
+
+
+message ULTRA_LOW_SPEED_WARNING //超低速 8
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulultra_low_speed_ratio = 2; //rctp 速度低于车道限速的n%高于m%就认为这辆车是超低速 百分比
+	optional uint32 ulspeed_ultra_low_speed_event_duration_thres = 3; //用于事件生成, 默认值5
+	optional uint32 ulundetect_ultra_low_speed_num_thres = 4;//用于事件解除 , 默认值10
+    repeated shield_info drsu_shield_list = 5;
+}
+
+/* 
+项目编号：
+机场项目：120
+沪杭甬项目：160
+嘉兴东项目：161
+海宁项目：170
+杭绍甬项目：100
+杭千项目：180
+环北：190 
+*/
+message LOW_SPEED_WARNING  //低速 9
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ullow_speed_ratio = 2; //rctp 速度低于车道限速的n%高于m%就认为这辆车是超低速
+	optional uint32 ulspeed_low_speed_event_duration_thres = 3; //用于事件生成, 默认值5
+	optional uint32 ulundetect_low_speed_num_thres = 4;    //用于事件解除 , 默认值10
+    repeated shield_info drsu_shield_list = 5;
+    optional uint32 ulProjectNum = 6; //项目编号 
+}
+
+message SPOILING_WARNING //抛洒物 10
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulthrowing_objects_len = 2;  // rctp  抛洒物长宽高
+    optional uint32 ulthrowing_objects_width = 3;// rctp
+    optional uint32 ulthrowing_objects_high = 4;// rctp
+    repeated shield_info drsu_shield_list = 5;
+}
+
+message TRAFFIC_JAM_WARNING //拥堵 11
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulcongestion_vehicle_num = 3; //rctp  单个DRSU下单条车道的车辆密度大于N,判定拥堵的窗口时长
+    optional uint32 ulcongestion_seconds = 4;   //rctp
+	optional uint32 ul_tci_congestion_seconds = 5;
+	repeated jam_lane_info astJamLaneInfoList = 6;
+    repeated shield_info drsu_shield_list = 7;
+}
+
+
+message EXCEED_SPEED_WARNING //超速 17
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulexceed_speed_ratio = 2; //rctp 速度高于车道限速m%就认为这辆车是超速
+	optional uint32 ulspeed_excess_speed_event_duration_thres = 3;	//超速
+    repeated shield_info drsu_shield_list = 4;
+}
+
+message ROAD_MAINTENANCE_WARNING //道路维护 18
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ul_road_maintenance_report_thres = 2;  //路障数多于这个数，才报维修（只用在路障事件）RCER
+    repeated shield_info drsu_shield_list = 3;
+}
+
+message OCCUPY_EMERGENCY_LANE_WARNING //占用应急车道 19
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulOccupyEmergencyLaneThres = 2;  //rctp  从发现可疑障碍物到生成事件所需的时间（异常障碍物认定时长，高速道路非静止车辆占领紧急车道阈值，单位帧号，即连续这么多帧占据紧急车道就会上报事件）
+    repeated shield_info drsu_shield_list = 3;
+    optional double dbdistance_threshold = 4; //判断障碍物压线距离阈值
+}
+
+message TRUCK_OCCUPY_THE_FAST_LANE_WARNING //占用快速车道 20
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulHeavyVehicleOccupyOvertakeLaneThres = 2;  //rctp
+    repeated shield_info drsu_shield_list = 3;
+}
+
+message TRAFFIC_ACCIDENT_WARNING  //事故 25
+{
+	optional event_cfg astEventCfg = 1;
+    repeated shield_info drsu_shield_list = 2;
+}
+
+message ABNORMAL_PARKING_WARNING //异常停车 4
+{
+	optional event_cfg astEventCfg = 1;
+    repeated shield_info drsu_shield_list = 2;
+}
+
+message OCCUPY_BUS_LANE_WARNING  //占用公交车道 27
+{
+	optional event_cfg astEventCfg = 1;
+    optional uint32 ulOccupyBusLaneThres = 2; //RCTP 在公交车使用时间，连续占用公交车道多少帧，算做占用公交车道
+    repeated shield_info drsu_shield_list = 3;
+}
+
+message ABNORMAL_CHANGE_LINE_WARNING //变道 28
+{
+    optional uint32 ulevent_type = 1; //事件类型
+    repeated uint32 auldrsu_list = 2; //指定点位下不上报事件
+    repeated shield_info drsu_shield_list = 3;
+}
+
+
+enum GENERIC_TYPE_E
+{
+	GENERIC_TYPE_UNKNOWN = 0;
+	GENERIC_TYPE_OTHERS = 1;
+	GENERIC_TYPE_HUMAN_LIKE = 2;
+	GENERIC_TYPE_VEHICLE = 3;
+    GENERIC_TYPE_OBJECT = 4;        //目标
+    GENERIC_TYPE_NONMOTOR = 5;      //非机动车
+    GENERIC_TYPE_GOODS = 6;         //物品
+    GENERIC_TYPE_SCENE = 7;         //场景
+}
+
+message diff_type_info
+{
+	optional GENERIC_TYPE_E eGenericType = 1;
+	optional uint32 ulDetectNumThres = 2;
+	optional uint32 ulRemoveDupThres = 3;
+	optional double dbLimitVelThres = 4; // m/s
+}
+
+message bus_lane_time
+{
+    optional uint32 ulStarthoursOfBusLane = 1; //start hours
+    optional uint32 ulStartminutesOfBusLane = 2; //start minutes
+    optional uint32 ulEndhoursOfBusLane = 3; //end hours
+    optional uint32 ulEndminutesOfBusLane = 4; //end minutes
+}
+
+message pedestrian_violations_config
+{
+    optional double dbHdMapUpperThreshold = 1;  //default:6
+    optional double dbHdMapLowerThreshold = 2;  //default:4
+    optional uint32 ulRelieveThreshold = 3;     //default:70
+    optional uint32 ulSwitch = 4;       //事件开关，默认0（关闭）
+    optional uint32 ulEmergencyVehicleLaneFlag = 5;         //应急车道行人上报开关  默认0（关闭）
+    optional uint32 ulEngineeringVehicleDistance = 6;       //行人和工程车判定距离
+    optional uint32 ulAccidentAbnormalparkingFlag = 7;      //异常停车和事故柜行人的过滤开关， 默认0(关闭)
+    optional uint32 ulPedEventJudgeTime = 8;                //行人事件判定时间
+    optional uint32 ulPedEventAreaJudgeDistance = 9;        //行人事件近远端判定距离
+    optional uint32 ulMotorcycleFusionDistance = 10;        //非机动车融合距离
+}
+
+message nocones_laneclosed_config
+{
+    optional uint32 ulSwitch = 1;       //事件开关，默认0（关闭）
+    optional uint32 ulPeriodSpan = 2;   //周期跨度，默认140s为一个计算周期
+    optional double dbMinProbability = 3; //最小概率，默认0.01
+    optional uint32 ulGenerateCoeffSwitch = 4; //实时生成系数开关，默认0（关）闭，弃用
+    optional uint32 ulEventMinDetectorSize = 5; //事件生成所需最小检测器数目，默认0
+    optional uint32 ulPyTestSwitch = 6; //是否生成PythonUI调试数据。默认0（关闭）
+    optional uint32 ulOutputDebugInfoSwitch = 7; //是否输出事件信息文件。默认0（关闭）
+    optional uint32 ulDetectorRelieveThreshold = 8; //当非应急车道监测器过大于N辆快速车时，解除监测器激活状态，默认3
+    optional uint32 ulLowSpeedVelThreshold = 9;     //暂时弃用
+    optional uint32 ulTotalVelsThreshold = 10;      //事件内通过总车速大于ulTotalVelsThreshold时，解除事件，默认50
+    optional uint32 ulDetectorRelieveCycleThreshold = 11;   //针对应急车道监测器，超过N个周期没有合入事件就解除，默认10
+    optional double dbEngineerSpeed = 12;       //监测器工程车的速度阈值，默认5m/s
+    optional uint32 ulMinPeds = 13;     //事件生成需要最小的行人数，默认1（大于1个）
+    optional uint32 ulDetectorRelieveLowThreshold = 14; //当非应急车道监测器过大于N辆低速车时，解除监测器激活状态，默认6
+    optional uint32 ulEmergencyDetectorRelieveThreshold = 15;//当应急车道监测器过大于N辆快速车时，解除监测器激活状态，默认2
+    optional uint32 ulEmergencyDetectorRelieveLowThreshold = 16; //当应急车道监测器过大于N辆低速车时，解除监测器激活状态，默认4
+    optional uint32 ulNoRunDetectorRelieveCycleThreshold = 17;  //禁行区监测器解除周期，默认10
+	optional uint32 ulEmergencyStaticVehicleCycleThreshold = 18; //应急车道生成事件的静止车辆周期阈值， 默认4
+	optional uint32 ulStaticVehicleCycleThreshold = 19; //非应急车道生成事件的静止车辆周期阈值，默认4
+    optional uint32 ulOutputAllDetectorDebugSwitch = 20;    //是否输出监测点信息文件。默认0（关闭）
+}
+
+message flow_detector_point
+{
+    optional double dbX = 1;
+    optional double dbY = 2;
+}
+message adjacent_flow_detector
+{
+    optional uint32 ulDetectorId = 1;
+    optional double dbCoefficient = 2;
+}
+message flow_detector
+{
+    optional uint32 ulId = 1;       //监测器ID
+    optional uint32 ulDrcLaneId = 2;    //暂未使用
+    optional uint32 ulRoadId = 3;       //暂未使用
+    optional double dbMeanFlow = 4;     //暂未使用
+    optional double dbP0 = 5;           //暂未使用
+    optional uint32 ulMaxDt = 6;        //车道封闭使用（最大未到车周期）
+    optional uint32 ulMeanDt = 7;       //车道封闭使用（平均未到车周期）
+    optional flow_detector_point stStartPos = 8;    //监测器起始坐标
+    optional double dbDetectorLength = 9;           //监测器覆盖长度
+    optional uint32 ulNextDetectorId = 10;          //下一个监测器ID
+    repeated flow_detector_point astDetectorPoints = 11;    //监测器覆盖的坐标
+    repeated adjacent_flow_detector astAdjacentDetector = 12;   //邻监测器ID
+    optional uint32 ulMasterDrsuId = 13;            //监测器DRSU ID
+    optional uint32 ulLastDetectorId = 14;          //前一个监测器ID
+}
+
+//无锥桶车道封闭 流量检测器配置
+message flow_detectors_config
+{
+    repeated flow_detector astDetectorList = 1;
+}
+
+message event_laneclosed_nocone
+{
+    optional uint64 ulEventId = 1;
+    repeated uint32 aulDetectorList = 2;
+}
+
+message event_laneclosed_nocones
+{
+    repeated event_laneclosed_nocone astEventList = 1;
+}
+
+message solid_line_change_config
+{
+    optional uint32 ulActiveThres = 1;     
+    optional uint32 ulEraseThres = 2;
+    optional uint32 ulSwitch = 3;       //事件开关，默认0（关闭）
+	optional uint32 ulOutputDebugInfoSwitch = 4; //是否输出调试信息文件。默认0（关闭）
+	optional uint32 ulLaneTypeFilter = 5;  //过滤应急车道和匝道的标志位，默认0（不过滤）
+	optional double dbDisThres = 6;	//车辆到压线车道距离阈值
+	optional uint32 ulobswatchthres = 7; //障碍物断帧维持时间
+}
+
+//多RCTP融合预测配置
+message fusion_prediction_config
+{
+    optional uint32 ulDrsuId = 1;       //DRSU ID
+    optional double dbDrsuUtmX = 2;
+    optional double dbDrsuUtmY = 3;
+    optional uint32 ulDistance = 4;     //距离DRSU ID的距离
+    optional uint32 ulPredictedFrames = 5; //sub frames
+}
+
+message lane_closed_config
+{
+    optional uint32 ulSwitch = 1;       //事件开关，默认0（关闭）
+    optional uint32 dbAreaEMA = 2;      //计算指数平滑平均面积的参数(exponentially weighted moving average)
+    optional uint32 dbLenthEMA = 3;     //计算指数平滑平均长度的参数(exponentially weighted moving average)
+    optional uint32 dbWidthEMA = 4;            //计算指数平滑平均长度的参数(exponentially weighted moving average)
+    optional uint32 dbMaxMinitWithoutVeh = 5;    //无车通过最大分钟，默认10
+    optional uint32 dbAreaThreshold = 6;         //约定面积阈值，70
+    optional uint32 dbLenthWidthThreshold = 7;   //约定长宽阈值，1.7
+    optional uint32 ulHiddenMarkovPeriod = 8;       //隐马尔科夫跃迁周期
+    optional uint32 dbConeNumThreshold = 9;      //锥桶数量阈值
+}
+
+message special_vehicle_config
+{
+    optional uint32 ulSwitch = 1;       //事件开关,默认0（关闭）
+    optional uint32 ulUnDetectFramesThreshold = 2; //事件解除帧数阈值，单位为帧，默认值10
+    optional uint32 ulGenerateFramesThreshold = 3; //事件生成帧数阈值，单位为帧，默认值为1
+    optional double ulUpdateDistanceThreshold = 4; //事件更新距离阈值，单位为m，默认值100
+    repeated vehicle_type_config aulSpecialTypeConfig = 5; //特殊类型config
+}
+
+message vehicle_type_config
+{
+    optional uint32 ulType = 1; //特殊车辆类型
+    repeated uint32 aulOutputDrsuIDs = 3; //输出点位,设置输出哪些点位的特殊车辆事件,默认加载点位1
+    repeated bus_lane_time aSubmitTimes = 4; //上报时间段,默认为00:00-00:00
+}
+
+
+message traffic_jam_config
+{
+    optional uint32 ulSwitch = 1;       //事件开关，默认0（关闭）
+    optional uint32 ulPeriodSpan = 2;   //周期跨度，默认180s为一个计算周期
+    optional uint32 ulFluentSpeed = 3; //default:90km/h
+    optional uint32 ulBasicFluentSpeed = 4; //default:60km/h
+    optional uint32 ulLightJamSpeed = 5; //default:40km/h
+    optional uint32 ulModerateJamSpeed = 6; //default:20km/h
+    optional uint32 ulPyTestSwitch = 7; //是否生成PythonUI调试数据(包含Python使用的事件文件与障碍物信息文件)。默认0（关闭）
+    optional uint32 ulEventMinDetectorSize = 8; //事件生成所需最小检测器数目，默认5， 大于5满足
+    optional uint32 ulOutputDebugInfoSwitch = 9; //是否输出调试信息文件(包含事件调试信息文件与监测器调试信息文件)。默认0（关闭）
+    optional uint32 ulMinVels = 10; //监测器最小过车数。默认4，大于等于4满足
+    optional double dbAvgSpeed = 11; //监测器最大平均速度。默认10.0m/s，，小于10.0m/s满足
+    optional uint32 ulMinVelsInRamp = 12;//匝道监测器最小过车数。默认4，大于等于4满足
+    optional double dbAvgSpeedInRamp = 13;//匝道监测器最大平均速度。默认4.0m/s，小于4.0m/s满足
+    optional uint32 ulPyTestObsAllSwitch = 14;//是否生成Python全部障碍物信息文件。默认0（关闭）
+    repeated uint32 aulOutputDebugDetectorDrsuIds = 15;//输出哪些点位下的监测器调试信息文件。默认空，都不输出
+    optional uint32 dbRelieveAvgSpeed = 16;//检测器拥堵态解除阈值，默认12m/s
+    optional uint32 dbRelieveAvgSpeedInRamp = 17;//匝道检测器拥堵态解除阈值，默认6m/s
+    optional uint32 ulApproximateSwitch = 18;//近似阈值激活开关，默认0（关闭）
+    optional uint32 dbApproximateCoeff = 19;//近似阈值系数，默认1.1
+
+}
+
+message fusion_overlap_area_config
+{
+    optional uint32 ulRctpId = 1;       //RCTP_N的配置
+    optional uint32 ulType = 2;         //1表示发送数据，2表示接收数据并处理数据
+    optional uint32 ulDrsuId = 3;       //发送哪个DRSU下的数据/接收哪个DRSU下的数据
+    optional double dbDrsuUtmX = 4;     //DRSU的UTMX
+    optional double dbDrsuUtmY = 5;     //DRSU的UTMY
+    optional double dbDistance = 6;     //超过DRSU多远才会发送
+}
+
+message tci_speed_config
+{
+    optional double dbLaneLimitSpeed = 1;
+    optional double dbFluentSpeed = 2;
+    optional double dbBasicFluentSpeed = 3;
+    optional double dbLightJamSpeed = 4;
+    optional double dbModerateJamSpeed = 5;
+}
+
+message tci_config
+{
+    optional uint32 ulSwitch = 1;       //事件开关，默认0（关闭）
+    optional uint32 ulSlidingWindowSize = 2;//滑动窗口大小，默认120s
+    optional uint32 ulReportCycle = 3;  //上报TCI周期，默认10s
+    optional uint32 ulOutputDebugInfoSwitch = 4; //是否输出调试信息文件。默认0（关闭）
+    optional tci_speed_config stTciSpeedConfig = 5; //TCI speed 阈值
+    optional tci_speed_config stTciSpeedConfigInRamp = 6;//TCI ramp speed 阈值
+}
+
+message abnormal_parking_config
+{
+    optional uint32 ulAbnormalParkingSwitch = 1;	//异常停车事件开关 1=open 0=close 默认打开
+	optional uint32 ulObsWatchThreshold = 2;		//车辆类障碍物静止观察时长阈值，单位s : 默认 10s
+	optional uint32 ulEventDurationThreshold = 3;	//异常停车事件最小生成时间阈值，单位s : 默认值120s
+	optional uint32 ulEventMaxDurationThreshold = 4;	//异常停车事件最长生成时间阈值，单位s: 默认值300s
+    optional uint32 ulEventWatchEndThreshold = 5;   //观察悬空态时间阈值 : 默认值 15s
+	optional uint32 ulEventActiveEndThreshold = 6;  //激活悬空态时间阈值，单位s : 默认值 15s
+	optional uint32 ulObsSmallSizeDistanceThreshold = 7;	//异常停车事件悬挂融合位移阈值，单位m : 默认值 3m
+	optional uint32 ulObsLargeSizeDistanceThreshold = 8;	//异常停车事件结束位移阈值，单位m : 默认值 6m
+    optional uint32 ulObsMergeThreshold = 9; //异常停车最小融合阈值，单位帧数;默认0,即每一帧的静止障碍物都融合 : 默认值 0
+    repeated uint32 OutParkingEventDrsuList  = 10;   //只允许输出在指定的DRSU下产生的异常停车事件的日志信息
+    optional uint32 ulEventCsvSwitch = 11;//事件日志开关，1=open 0=close 默认打开
+    optional uint32 ulDetectorNum = 12;//检测器个数，即指定几个检测器来构成事件的路况检测范围
+    optional uint32 ulJamDetectorNum = 13;//低速检测器有几个;即:在ulDetectorNum中至少有ulJamDetectorNum个低速，才判断为拥堵；
+    optional uint32 ulDetectorEreaVehicle = 14;//事件路况范围内所有车辆个数
+    optional uint32 ulEventReleaseTime= 15;//事件释放的时长，默认600秒,单位秒;配置0秒，相当于激活悬空态时间结束后，事件立刻解除
+    optional uint32 ulStaticDistance = 16;//10秒稳定期内，最大位移，默认3m 
+    optional uint32 ulObsMaxDistance = 17;//障碍物偏离事件的最大距离，默认配置60米
+    optional uint32 ulJamAvgSpeed = 18;//拥堵速度，默认6m/s;拥堵是综合判断的：要满足低速检测器个数，车辆数目
+}
+
+message traffic_accident_config
+{
+    optional uint32 ulTrafficAccidentSwitch = 1;	//交通事故事件开关 1=open 0=close
+	optional uint32 ulObsWatchThreshold = 2;		//车辆类障碍物静止观察时长阈值，单位s: 默认值 10s
+	optional uint32 ulEventDurationThreshold = 3;	//事件最小生成时间阈值，单位s : 默认值 120s
+	optional uint32 ulEventMaxDurationThreshold = 4;	//事件最长生成时间阈值，单位s : 默认值 300s
+    optional uint32 ulEventWatchEndThreshold = 5;   //观察悬空态时间阈值 : 默认值 15s
+	optional uint32 ulEventActiveEndThreshold = 6;  //激活悬空态时间阈值，单位s : 默认值 15s
+	optional uint32 ulObsSmallSizeDistanceThreshold = 7;	//事件悬挂融合位移阈值，单位m : 默认值 3m
+	optional uint32 ulObsLargeSizeDistanceThreshold = 8;	//事件结束位移阈值，单位m : 默认值 6m
+    optional uint32 ulObsMergeThreshold = 9; //事故最小融合阈值，单位帧数;默认0,即每一帧的静止障碍物都融合 : 默认值
+    repeated uint32 OutParkingEventDrsuList  = 10;   //只允许输出在指定的DRSU下产生的异常停车事件的日志信息(暂时未生效)
+    optional uint32 ulEventCsvSwitch = 11;//事件日志开关，1=open 0=close 默认打开
+    optional uint32 ulDetectorNum = 12;//检测器个数，即指定几个检测器来构成事件的路况检测范围, 默认6个
+    optional uint32 ulJamDetectorNum = 13;
+    optional uint32 ulDetectorEreaVehicle = 14;//事件路况范围内所有车辆个数,默认8
+    optional uint32 ulEventReleaseTime= 15;//事件释放的时长，默认10分钟，单位分钟--暂时没用着
+    optional uint32 ulStaticDistance = 16;//10秒稳定期内，最大位移，默认3m 
+    optional uint32 ulObsMaxDistance = 17;//障碍物偏离事件的最大距离，默认配置60米--暂时没用
+    repeated uint32 astSpecialDrsuIDList = 18; //针对某些点位的特点，进行交通服务治理；该配置下的点位，只有识别到行人才会触发事件，否则不会生成事故；
+    optional uint32 ulJamAvgSpeed = 19;//拥堵速度，默认6m/s;拥堵是综合判断的：要满足低速检测器个数，车辆数目
+	repeated uint32 astJamSpecialDraIDList = 20; //指定点位下进行更加严格的拥堵判断：判断本车道+邻车道的路况
+}
+
+//工程车配置
+message engineering_vehicle_config
+{
+    optional uint32 ulHanmingDistance = 1;
+    repeated string plateList = 2;
+}
+
+message event_threshold
+{
+	optional uint32 ulstatic_ratio = 1;				//静止速度标准默认5%
+	optional uint32 ulspeed_state_duration_thres = 2;  	//持续多少帧速度状态迁移至低速、超低速、超速、静止、正常，默认5帧
+	optional uint32 ulspeed_event_duration_thres = 3;  	//持续多少帧算异常事故低速、超低速、超速、静止，默认4.5s，45帧
+	optional uint32 ulstatic_pos_thres = 4;		//静止异常障碍物位移超过该阈值提前认定为运动起来了，单位m
+	optional uint32 ulUnDetectNumThres = 5;  	//Threshold for undetected obstacles to remove, default = 10
+	optional uint32 ulDebugFlag = 10;    //0 means off, 1 means on, output obsData csv
+	optional uint32 ulCityFlag = 11;    //0 means not in city, 1 means in city lane
+	optional double dbGlitchSpeed = 14;   //低于该值的速度，不作为求theta的依据 : m/s
+	optional double dbQCov = 15;   //Q阵的初始值
+	optional double dbGatingMaDisTrustRegion = 16;   //历史关联时的马氏距离合理范围 default:0.1
+	optional double dbGatingDisTrustRegion = 17;   //历史关联时的欧式距离合理范围 default:0.5
+	optional double dbGatingMaDis = 18;   //马氏距离的范围 default:10
+	optional double dbGatingDis = 19;   //欧氏距离的范围 default:12
+	optional uint32 ulDetectNumThres = 20;   //决定观测数据是否新增的阈值 default:10
+	optional uint32 ulLastObvInfoMemorySize = 21;   //上次关联信息的窗口大小 default:5
+	optional double dbMaxWeight = 22; //最大权重值 default: 100
+	optional uint32 ulExponentialSmoothWindowLength = 23; //用于指数平滑的窗口长度（逻辑上的） default: 50帧
+	optional double dbCheckVelStaticThres = 24; //当指数平滑后的速度低于该值时，判定为静止 default: 0.5m/s
+	repeated bus_lane_time aBusLaneTimes = 25;  //Bus lane time
+	repeated diff_type_info astDiffTypeInf = 26;
+	optional uint32 ulevent_anaylize_duration = 27; //事件分析的周期，RCER在用，单位是ms，默认是200ms
+    optional uint32 ulFinePredictionSwitch = 28; //精细化预测开关
+	optional uint32 ulRctpDelayTime = 29; //rctp延迟处理配置 默认 11帧
+	optional uint32 ulHanMingPlateNoDistance = 30; //车牌关联的汉明距离 默认为 0
+
+    optional uint32 ulTrajectoryReconstructorSwitch = 31; //轨迹重构开关
+    optional uint32 ulTrajectoryReconstructorWatchSize = 32;//轨迹重构缓冲帧数
+    optional uint32 ulFreeIDMStaticSwitch = 33; //精细化预测自由态下保持静止预测开关
+    optional double dbBestPosRate = 34;//精细化预测最佳位置比率
+    optional pedestrian_violations_config stPedestrianViolations = 35;  //行人配置
+    optional nocones_laneclosed_config stNoConesLaneClosed = 36;//无锥桶车道封闭配置
+    optional uint32 ulPlateDataIdentification = 37; //数据标识,默认为 1
+
+	optional uint32 ulObsWatchThreshold = 38;		//车辆类障碍物静止观察时长阈值，单位s
+	optional uint32 ulEventDurationThreshold = 39;	//异常停车事件最小生成时间阈值，单位s
+	optional uint32 ulEventMaxDurationThreshold = 40;	//异常停车事件最长生成时间阈值，单位s
+	optional uint32 ulEventEndThreshold = 41;		//异常停车事件结束时长阈值，单位s
+	optional uint32 ulObsSmallSizeDistanceThreshold = 42;	//异常停车事件悬挂融合位移阈值，单位m
+	optional uint32 ulObsLargeSizeDistanceThreshold = 43;	//异常停车事件结束位移阈值，单位m
+	optional uint32 ulNewAbnormalParkingSwitch = 44;	//异常停车事件开关 1=open 0=close
+	repeated uint32 OutParkingEventDrsuList  = 45;  //只允许输出在指定的DRSU下产生的异常停车事件的日志信息
+	optional uint32 ulApkObsMergeThreshold = 46; //异常停车最小融合阈值，单位帧数;默认0,即每一帧的静止障碍物都融合
+	optional uint32 ulObsCreateWithPlateSwitch  = 47;
+    repeated fusion_prediction_config astFusionPrediction = 48;//多RCTP融合重叠区域的预测配置
+    optional traffic_jam_config stTrafficJam = 49;
+    repeated fusion_overlap_area_config astFusionOverlapArea = 50;//多RCTP融合重叠区域融合配置
+    optional tci_config stTci = 51; //tci配置信息
+    optional uint32 ulTrafficAccidentSwitch = 58;	//交通事故事件开关 1=open 0=close
+    optional uint32 ulPlateRelationDistance = 59; // 车牌匹配距离 默认 30m
+    optional lane_closed_config stLaneClosed = 60; //道路封闭事件配置
+    optional HanmingLetterList stHanmingDistance = 61;  //汉明距离配置	
+    optional abnormal_parking_config astAbnormalParkingCfg = 62; //异常停车相关配置
+    optional traffic_accident_config astTrafficAccidentCfg = 63; //事故事件配置
+    optional uint32 ulPosConfidenceThreshold = 64; //位置置信度阈值，默认是0
+    optional uint32 ulUseRawThetaSwitch = 65;   //是否使用原始Theta，默认0(不使用)
+    optional uint32 ulFlowHeatMapUpdateFlag = 66; //交通事故事件依赖的车流量热图的开关: 0--热图文件不更新 ; 1--更新; 默认1
+    optional uint32 ulUseRawSpeedSwitch = 67;   //是否使用原始Speed，默认0(不使用)
+    repeated uint32 aulDetectorDrsuIds = 68;    //系统所需处理的drsu id下的监测器，默认不配置，处理全部监测器
+	
+	optional solid_line_change_config stSolidLineChange = 69;  //实线变道配置
+    optional special_vehicle_config stSpecialVehicle = 70; //特殊车辆事件配置
+    optional double dbScalarSpeedRatio = 71; ////使用“DRA上报的标量速度”和“DRC轨迹跟踪时的Vx和Vy合成速度”进行对比，偏差在DRC的 dbScalarSpeedRatio%之内时。默认0.1(10%)
+    optional uint32 ulCorrectPosSwitch = 72;    //是否利用方向热图修正 有观测值时的位置信息, 0--不修正，1--修正，默认1。预测值是一直修正的
+	
+	optional double dbGatingShortDis = 73;   //欧氏距离短半径 default:6
+    optional engineering_vehicle_config stEngineeringVehicleCfg = 74;
+    optional uint32 ulApkStaticObsBrokenFrameCount = 75;//异常停车和事故，判断障碍物10s稳定期内，允许的最大断帧数目
+    optional uint32 ulOutEtodInfoDebugSwitch = 76;  //etod 锥筒debug输出开关 
+}
+
+ 
+
+
+
+
+message jam_detector
+{
+    optional uint32 ulDrsuId = 1;
+    optional int32 slId = 2;
+    optional double dbUtmX = 3;
+    optional double dbUtmY = 4;
+    optional double dbAvgSpeed = 5; //平均速度
+    optional uint32 ulLaneId = 6;
+    optional uint32 ulLaneType = 7;
+    optional uint32 ulHdLaneId = 8;
+    optional uint32 ulHdConnectionId = 9;
+}
+
+message jam_detectors
+{
+    optional uint32 ulFrame = 1;
+    optional uint32 ulSubFrame = 2;
+    repeated jam_detector jam_detector_list = 3;
+}
+
+
+message PairValue
+{
+  optional string sletter = 1;
+  optional double value = 2;
+}
+
+message HanmingLetterInfo
+{
+  optional string sletter = 1;
+  repeated PairValue appcharacter = 2;
+}
+
+message HanmingLetterList
+{
+  repeated HanmingLetterInfo hanmingletter = 1;
+}

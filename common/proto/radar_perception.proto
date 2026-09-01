@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+message radar_real_time_pro
+{
+ required int64 TimeStamp = 1;
+ optional bytes Channel = 2;
+ optional int64 SendTimestamp = 3;
+ 
+ message Object
+ {
+  required int32 ObjectID = 1;
+  required int32 ObjectType = 2;
+  optional int32 LaneID = 3;
+  optional int32 HeadWay = 4;
+  optional int32 TimeHeadWay = 5;
+  optional int32 Speed = 6;
+  optional int32 SpeedX = 7;
+  optional int32 SpeedY = 8;
+  optional int32 DynamicAttribute = 9;
+  optional int32 Acceleration = 10;
+  optional int32 AccelerationX = 11;
+  optional int32 AccelerationY = 12;
+  optional float Theta = 13;
+  optional int32 Length = 14;
+  optional int32 Width = 15;
+  optional int32 Height = 16;  
+  optional int32 Confidence = 17;
+  optional int32 EventFlag = 18;
+  optional int32 OriginalX = 19;
+  optional int32 OriginalY = 20;  
+ }
+ repeated Object Objects = 6;
+ 	optional int64 DraRecvTimestamp = 7;
+	optional int64 DraSendTimestamp = 8;
+}

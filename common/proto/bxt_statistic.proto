@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package statistic;
+
+message fusedPosition
+{
+    uint64 longitude = 1;
+    uint64 latitude = 2;
+    uint32 altitude = 3;
+}
+
+message gpsPosition
+{
+    int32  gps_x = 1;
+    int32  gps_y = 2;
+    int32  gps_z = 3;
+}
+
+message atCommand
+{
+    string csq = 1;
+    string qrsrp = 2;
+    string qrsrq = 3;
+    string qsinr = 4;
+    string qnwinfo = 5;
+    string c5greg = 6;
+}
+
+message ftpData
+{
+    uint32 bytes = 1;
+    float time = 2;
+    float rate = 3;
+}
+
+message networkCard
+{
+    uint32 RX_bytes = 1;
+    uint32 TX_bytes = 2;
+    uint32 RX_diff = 3;
+    uint32 TX_diff = 4;
+}
+
+message statsInfo
+{
+    uint32 p_sequence_number = 1;
+    float  p_time = 2;
+    float package_loss = 3;
+    float  i_transfer = 4;     //KBytes
+    float  i_bandwidth = 5;    //Kbits/sec
+
+    string serial_num = 6;
+    fusedPosition fused = 7;
+    gpsPosition gps = 8;
+    uint32 height = 9;
+    uint32 battery_capacity_percent1 = 10;
+    uint32 battery_capacity_percent2 = 11;
+    uint32 cpu_temp = 12;
+    uint64 send_timestamp = 13;
+    atCommand at_command = 14;
+    ftpData download_ftp = 15;
+    ftpData upload_ftp = 16;
+    networkCard network_card = 17;
+}
+
+
+message statSwitch
+{
+    uint32 switch_on = 1; // 1:off 2:on
+    uint32 iperf_on = 2;
+    uint32 ftp_on = 3;
+}

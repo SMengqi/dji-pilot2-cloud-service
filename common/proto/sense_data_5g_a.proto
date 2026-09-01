@@ -1,0 +1,26 @@
+syntax = "proto3";
+package sense_data;
+
+
+message Extension{
+}
+
+message SenseDataObject{
+    string objectId = 1;
+    double longitude = 2;
+    double latitude = 3;
+    double altitude = 4;
+    double height = 5;
+    double speed = 6;
+    double time = 7;
+    Extension extension = 8;
+}
+
+message senseData{
+    string providerCode = 1;
+    uint32 deviceType = 2;
+    string deviceId = 3;
+    uint32 msgCnt = 4;
+    double ptTime = 5;
+    repeated SenseDataObject objects = 6;
+}

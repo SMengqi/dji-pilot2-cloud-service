@@ -1,0 +1,32 @@
+syntax = "proto2";
+package bxt_mqtt;
+
+enum QOS_LEVEL_E
+{
+    QOS_LEVEL_0 = 0;
+	QOS_LEVEL_1 = 1;
+	QOS_LEVEL_2 = 2;
+}
+
+message mqtt_publish
+{
+	optional string bxt_osd = 1;
+	optional string dji_services = 2;
+	optional string kmz_request = 3;
+	optional string dji_requests_reply = 4;
+	optional string dji_drc_down = 5;
+	optional string bxt_uav_status = 6;
+	optional string bxt_uav_result = 7;
+	optional string bxt_payload_param = 8;
+}
+
+message mqtt_config_data
+{
+    optional string server_address = 1;
+	optional string pub_client_id = 2;
+	optional string sub_client_id = 3;
+	optional string user_name = 4;
+	optional string password = 5;
+	optional QOS_LEVEL_E qos = 6;
+	optional mqtt_publish publish = 7;
+}

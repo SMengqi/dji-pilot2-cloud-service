@@ -1,0 +1,82 @@
+syntax = "proto2";
+package if_ladar;
+
+message LADAR_REGIST_REQ {
+    // 消息时间戳，单位：秒
+    required double timestamp = 1;  //必须
+
+    // 雷达id
+    required uint64 id = 2;   //必须
+
+    // 经度
+    optional double longitude = 3;
+
+    // 纬度
+    optional double latitude = 4;
+
+    // 位置大地高度
+    optional double altitude = 5;
+
+    // 雷达朝向
+    optional double heading_angle = 6;
+
+    // 覆盖半径
+    optional double cover_radius = 7;
+
+    // 探测夹角
+    optional double detect_angle = 8;
+}
+
+
+message LADAR_REGIST_RSP
+{
+    // 消息时间戳，单位：秒
+    required double timestamp = 1;
+
+    // 雷达id
+    required uint64 id = 2;
+
+    // 注册结果
+    required uint32 result = 3;
+
+    // token
+    required string token = 4;
+}
+
+message LadarRawObv {
+    
+    required string track_id = 1;          // 观测站跟踪ID
+    
+    optional uint32 obsType = 2;           // 障碍物类型 1，无人机  2，鸟  3，气球  4，unknown
+
+    required double timestamp = 3;         // UNIX时间戳, 单位毫秒
+
+    required double longitude = 4;         // 经度
+
+    required double latitude = 5;          // 纬度
+
+    optional double seaaltitude = 6;       // 海拔高度，单位m
+
+    optional double earthaltitude = 7;     // 对地高度，单位m      两个高度可以一样
+
+    optional double speed = 8;             // 标量速度，单位 m/s
+
+    optional double velocity_x = 9;        // X方向速度，单位m/s
+   
+    optional double velocity_y = 10;       // Y方向速度，单位m/s
+    
+    optional double velocity_z = 11;       // Z方向速度，单位m/s
+    
+    optional double course = 12;           // 飞行器航向角，范围为 (-180度,180度]，X方向(正东)为 0 度，Y方向(正北)为 +90 度 
+}
+
+//都是必须的
+message LADAR_INFO_REPORT {
+    
+    required double timestamp = 1;         // 消息时间戳，单位：毫秒
+    
+    required string ladarId = 2;           // 雷达id
+
+    repeated LadarRawObv obs_list = 3;     // 障碍物列表
+}
+

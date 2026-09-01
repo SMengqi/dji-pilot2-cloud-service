@@ -1,0 +1,157 @@
+# Originally written by Jonathan Larmour, Red Hat, Inc.
+# Modify by lijian (@Sunnorth) for easy building.
+# This file is in the public domain and may be used for any purpose
+PSROOT = ..
+
+include ./mk.conf
+
+B=$(BUILDNAME)
+ifeq ($(BUILDCOMMON), drsu)
+	BEXE=$(BUILDOBJECT)
+else
+ifeq ($(xtest),y)
+	BEXE=$(BUILDNAME)_xtest
+else 
+	BEXE=PlTPILOT2CLOUD_v0.1.0
+endif
+endif
+#BEXE=$(BUILDNAME)
+
+
+
+
+TARGET=DrPs-$(BEXE).bin
+F="./Makefile.all"
+drver = $(shell cat dr_version.txt)
+
+
+
+START_TIME ="$(shell date +%Y/%m/%d-%H:%M:%S;)"
+LDFLAGS += -L$(BUILD_DIR)/../
+LDFLAGS += -L$(BUILD_DIR)/../../build_cloud
+LDFLAGS += -L$(BUILD_DIR)/../../lib
+
+LDFLAGS += -L$(PSROOT)/common/lib
+LDFLAGS += -L/usr/local/lib/
+LDFLAGS += -L/usr/local/protobuf/lib/
+
+LDFLAGS += -lplatform_$(BUILDNAME)
+LDFLAGS += -lplnetwork_$(BUILDNAME)
+LDFLAGS += -lcom_$(BUILDNAME)
+LDFLAGS += -lssl
+LDFLAGS += -lcrypto
+	
+LDFLAGS += -ljansson
+LDFLAGS += -lpistache
+LDFLAGS += -ljsoncpp
+ifeq ($(xtest),y)
+LDFLAGS += -lXtest_$(BUILDNAME)
+else
+LDFLAGS += -lplroot_$(BUILDNAME)
+endif
+
+LDFLAGS += -lmqtt_$(BUILDNAME)
+LDFLAGS += -llcf_$(BUILDNAME)
+LDFLAGS += -lflyto_$(BUILDNAME)
+LDFLAGS += -ltrack_$(BUILDNAME)
+LDFLAGS += -ldevice_$(BUILDNAME)
+LDFLAGS += -lpayload_$(BUILDNAME)
+
+LDFLAGS += -lcommon_utils_$(BUILDNAME)
+
+LDFLAGS += -Wl,--copy-dt-needed-entries -lredis++
+LDFLAGS += -lhiredis
+
+
+
+LDFLAGS += -lrdkafka
+LDFLAGS += -lrdkafka++
+LDFLAGS += -lprotobuf
+LDFLAGS += -ldl
+LDFLAGS += -lcryption
+LDFLAGS += -lnacos-cli
+LDFLAGS += -lpaho-mqtt3as
+LDFLAGS += -lpaho-mqttpp3
+LDFLAGS += -lboost_system
+LDFLAGS += -lboost_thread
+LDFLAGS += -lprotobuf-lite
+
+.PHONY: all clean depends libs version
+
+all: depends DrPs$(BEXE) $(TARGET)
+
+depends:
+	@echo "you start at:" $(START_TIME)
+
+	mkdir -p $(BUILD_DIR)
+	make -f $(F) version
+	make -f $(F) libs
+
+clean:
+	@echo Cleaning...
+
+	make -C $(PSROOT)/common clean
+	make -C $(PSROOT)/common/proto clean
+	
+
+ifeq ($(BUILDNAME), cloud)
+	make -C $(PSROOT)/platform/linux clean
+	make -C $(PSROOT)/platform/network clean
+	make -C $(PSROOT)/common/proto clean
+	make -C $(PSROOT)/drc/utils clean
+	make -C $(PSROOT)/cloud/root clean
+	make -C $(PSROOT)/cloud/mqtt clean
+	make -C $(PSROOT)/cloud/lcf clean
+	make -C $(PSROOT)/cloud/flyto clean
+	make -C $(PSROOT)/cloud/track clean
+	make -C $(PSROOT)/cloud/device clean
+	make -C $(PSROOT)/cloud/payload clean
+endif
+
+
+	-rm -rf $(BUILD_DIR)/../DrPs$(BEXE) $(BUILD_DIR)/version.o $(OBJS) $(BUILD_DIR)
+
+pkg:
+	make -C $(PSROOT)/drsu
+
+DrPs$(BEXE) : $(OBJECT)
+
+	$(XLD) $(LDFLAGS) -O2 -o $(BUILD_DIR)/../DrPs$(BEXE) $(BUILD_DIR)/version.o $(OBJS) $(LDFLAGS) -lpthread -ldl -lrt
+
+ifeq ($(BUILDNAME), fusion)
+	#cp $(BUILD_DIR)/../libfusion.a $(PSROOT)/common/lib/
+else
+	#cp $(BUILD_DIR)/../DrPs$(BEXE) $(BUILD_DIR)/../$(drver)
+endif
+
+
+
+$(TARGET) :DrPs$(BEXE)
+	@echo "finished at" $(shell date +%Y/%m/%d-%H:%M:%S;)
+
+version :
+	#chmod +x mkversion.sh
+	#./mkversion.sh $(BEXE)
+
+	#@"SubWCRev.exe" ./ version.tmpl version.cpp
+	$(XCC) $(CXXFLAGS)  -DUSERNAME="\"$(USERNAME)\"" -DHOSTNAME="\"$(HOSTNAME)\"" -DSYS_TIME="\"$(SYS_TIME)\"" $(ECOS_GLOBAL_CFLAGS) -c -o $(BUILD_DIR)/version.o  version.cpp
+
+libs:
+
+ifeq ($(BUILDNAME), cloud)
+	make -C $(PSROOT)/common/proto -j
+	make -C $(PSROOT)/drc/utils -j
+	make -C $(PSROOT)/platform/linux -j
+	make -C $(PSROOT)/platform/network -j
+	make -C $(PSROOT)/cloud/root -j
+	make -C $(PSROOT)/cloud/lcf -j
+	make -C $(PSROOT)/cloud/mqtt -j
+	make -C $(PSROOT)/cloud/flyto -j
+	make -C $(PSROOT)/cloud/track -j
+	make -C $(PSROOT)/cloud/device -j
+	make -C $(PSROOT)/cloud/payload -j
+endif
+
+	make -C $(PSROOT)/common -j
+
+

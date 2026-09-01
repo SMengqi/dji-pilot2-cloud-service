@@ -1,0 +1,79 @@
+syntax = "proto2";
+package if_drsu_geofencing;
+
+message Longitude_And_Latitude
+{
+  optional double longitude = 1;
+  optional double latitude = 2;
+}
+
+message Polygon_GeoFencing
+{
+	repeated Longitude_And_Latitude geofencing_coordinate_list = 2;
+}
+
+message drsu_range_config_data
+{
+	optional uint32 uldrsu_id = 1;
+	repeated Polygon_GeoFencing polygon_geofencing_list = 2;
+}
+
+message drsu_cfg_file
+{
+	repeated drsu_range_config_data drsu_cfg_list = 1;
+}
+
+message time_config
+{
+    optional uint32 ulstart_hours = 1; //start hours 0~23
+    optional uint32 ulstart_minutes = 2; //start minutes 0~59
+    optional uint32 ulend_hours = 3; //end hours
+    optional uint32 ulend_minutes = 4; //end minutes
+}
+
+message drsu_other_info
+{
+    optional uint32 uldrsu_id = 1;
+    repeated uint32 ulobs_type = 2;
+    repeated time_config sttime_config = 3;
+}
+
+//根据点位，时间段，障碍物类型进行过滤
+message filter_range_config
+{
+    repeated drsu_other_info other_info = 1;
+    optional drsu_cfg_file range_cfg = 2;
+}
+
+message Vector3d {
+  optional double x = 1;  // in meters.
+  optional double y = 2;  // in meters.
+  optional double z = 3;  // in meters.
+}
+
+message ip_range_config_data
+{
+	optional string ulip_id = 1;
+	optional uint32 uldrsu_id = 2;
+	optional Vector3d pos = 3;
+	repeated Polygon_GeoFencing polygon_geofencing_list = 4;
+}
+
+message ip_cfg_file
+{
+	repeated ip_range_config_data ip_cfg_list = 1;
+}
+
+
+message event_ring_config_data
+{
+	optional uint32 uldrsu_id = 1;
+	repeated uint32 ulevent_type = 2;
+	repeated Vector3d ring_point_list  = 3;
+}
+
+message ring_cfg_file
+{
+	repeated event_ring_config_data ring_cfg_list = 1;
+}
+

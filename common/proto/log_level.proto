@@ -1,0 +1,27 @@
+syntax = "proto2";
+package platform_log;
+
+import "kafka_config.proto";
+
+enum LOG_LEVEL_E
+{
+    DO_NOT_USE = 0;     //Log at this level is currently designed to be closed by void method. Don't use this level.
+    FATAL = 1;          //fatal error
+    ERR = 2;            //error
+    WARN = 3;           //warning
+    INF = 4;            //Information for displaying context, global variables, values of statistical variables, etc. Control Plane
+    TRC = 5;            //Used to indicate the arrival and delivery of some messages, including some field values in the display, etc. Control Plane
+    UINF = 6;           //User plane LOG, By default, this level of LOG is turned off.
+}
+
+message log_config_data
+{
+    optional string aucModuleName = 1;
+    optional LOG_LEVEL_E ulModuleLevel = 2;
+}
+message log_config_list
+{
+    repeated log_config_data astLogLevelList = 1;
+    optional int32 u32LogWriteFlag = 2; //If it does not exist or 1, only writing log into files; If 2, only kafka is written; If 3, both are written
+    optional kafka_config.kafka_producer_init_list stLogProducer = 3;
+}

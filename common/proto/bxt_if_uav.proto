@@ -1,0 +1,80 @@
+syntax = "proto2";
+package if_uav;
+
+
+
+
+message ExtraInfo {
+    optional int32 Battery = 1;           //电池电量，电池电量百分比，如为百分之87，报送87
+    optional int32 Endurance = 2;         //剩余续航时间
+    optional int32 Satellite = 3;         //GPS搜星数量
+    optional string Mode = 4;             //飞行模式,STOPED，IN-AIR，ON-GROUND，TAKE-OFF,GO-HOME,LANDING，JOY-STICK，IN-WAY
+    optional string CameraMode = 5;       //相机模式,video/photo 照相或者摄像模式
+    optional string CameraStatus = 6;     //相机状态,照相模式是single单拍，multiple连拍，摄像模式是recording录像/nullRecording不在录像
+    optional int32 ContinuousNumber = 7;  //连拍张数
+    optional int32 ExposureMode = 8;      //曝光模式
+    optional int32 ISO = 9;               //感光度
+    optional int32 EV = 10;               //曝光度
+    optional int32 Shutter = 11;          //快门速度
+    optional int32 Zoom = 12;             //镜头的缩放倍数，对于中心点缩放
+    optional int32 Aperture = 13;         //光圈值
+    optional int32 ControlMode = 14;      //控制模式,0为遥控器控制，1为虚拟摇杆
+    optional int32 Pitich = 15;           //无人机俯仰角，保留一位小数，乘以10传输
+    optional int32 Roll = 16;             //无人机翻滚角，保留一位小数，乘以10传输	
+    optional int32 GimbalPan = 17;        //云台偏航角,保留一位小数，乘以10传输
+    optional int32 GimbalTilt = 18;       //云台俯仰角,保留一位小数，乘以10传输保留一位小数，乘以10传输
+    optional int32 GimbalRoll = 19;       //云台翻滚角,保留一位小数，乘以10传输，如为2轴载荷，传0
+    optional int32 ForcedLanding = 20;    //是否达到强制降落标准，0未达到，1已达到，如没有降落检测机制，不用提供
+    optional int32 Wpnumber = 21;         //当前航点数，第一个航点为1，没有到第一个航点为0或者不传，在航点途中未到下一个点位，传上一点，既在第一个航点到第二航点之间传1
+    optional int32 ActionNum = 22;        //当前动作序号,动作从1开始计数，第一个航点的第一个动作为101，第二个动作为102，若没动作传0或者不传
+    optional int32 LineId = 23;
+    optional string MegaphoneVolum = 24;  //喊话器音量,字符串,1-100
+    optional int32 FlightTime = 25;       //已经飞行的时间，单位：秒
+}
+
+
+
+
+message UAVFlightInfo {
+
+    required double longitude = 1;      // 飞行器所在位置经度
+
+    required double latitude = 2;       // 飞行器所在位置纬度
+
+    optional double seaaltitude = 3;    // 飞行器所在位置海拔高度，单位m
+    
+    optional double earthaltitude = 4;  // 飞行器所在位置对地高度，单位m
+    
+    optional double speed = 5;          // 飞行器标量速度，单位 m/s
+    
+    optional double velocity_x = 6;     // 飞行器 X 方向速度，单位 m/s
+   
+    optional double velocity_y = 7;     // 飞行器 Y 方向速度，单位 m/s
+    
+    optional double velocity_z = 8;     // 飞行器 Z 方向速度，单位 m/s
+
+    optional double course = 9;         // 飞行器航向角，范围为 (-180度,180度]，X方向(正东)为 0 度，Y方向(正北)为 +90 度 
+
+    optional double homelng =10;        // 遥控器所在位置经度
+		 
+    optional double homelat =11;        // 遥控器所在位置经度	 
+
+    optional double timestamp = 12;     // UNIX时间戳, 单位毫秒	 地面站数据解析时间戳
+}
+
+
+
+message UAV_INFO_REPORT {
+
+    required double timestamp = 1;      // UNIX时间戳, 单位毫秒	服务器接收到地面站数据的时间戳
+
+    required string uavid = 2;          // 无人机 id
+
+    required UAVFlightInfo flightdata = 3;
+
+    optional ExtraInfo extradata = 4;
+
+    optional string deviceid = 5;       // TBOX id
+
+}
+

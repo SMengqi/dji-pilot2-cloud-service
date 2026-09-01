@@ -1,0 +1,335 @@
+syntax = "proto2";
+package event_debug;
+
+import "if_proto_common.proto";
+
+enum ABNORMAL_PARKING_STATE_E
+{
+    ABNORMAL_PARKING_NULL_STATE = 0;
+    ABNORMAL_PARKING_INIT_STATE = 1;
+    ABNORMAL_PARKING_WATCH_STATE = 2;
+    ABNORMAL_PARKING_ACTIVE_STATE = 3;
+    ABNORMAL_PARKING_SUSPEND_STATE = 4;
+    ABNORMAL_PARKING_WATCH_SUSPEND_STATE = 5;
+	TRAFFIC_ACCIDENT_NULL_STATE = 6;
+    TRAFFIC_ACCIDENT_ACTIVE_STATE = 7;
+    TRAFFIC_ACCIDENT_SUSPEND_STATE = 8; 
+    EVENT_LANE_TRAFFIC_JAM = 9;    
+    EVENT_NOCONESL_LANE_CLOSED = 10;     
+}
+
+enum EVENT_CHANGE_STATE_E
+{
+    OBS_WITHIN_RANGE = 1;     //障碍物在范围内
+    OBS_OUT_OF_RANGE = 2;     //障碍物坐标不再范围
+    OBS_DATA_DISAPPEAR = 3;   //障碍物数据异常消失
+    OBS_TRAFFIC_ACCIDENT = 4; //异常停车转为交通事故
+}
+
+enum OBS_ABNORMAL_PARKING_STATE_E
+{
+    OBS_ABNORMAL_PARKING_NULL_STATE = 0;
+    OBS_ABNORMAL_PARKING_INIT_STATE = 1;
+    OBS_ABNORMAL_PARKING_WATCH_STATE = 2;
+    OBS_ABNORMAL_PARKING_ACCIDENT_STATE = 3;
+    OBS_ABNORMAL_PARKING_DISAPPEAR_STATE = 99;//障碍物数据断帧
+}
+
+
+message DRC_EVENT_DEBUG_ABNORMAL_PARKING
+{
+	optional uint32 frame = 1; //帧数 ulSystemFrame
+
+	optional uint32 subframe = 2; //子帧数 ulSystemSubFrame
+
+	optional uint32 rctpId = 3; //rctpid ulRCTPMoudleID
+
+	optional uint64 eventId = 4; //事件id Base Event id
+	
+	optional if_proto_common.EVENT_TPYE_E eventype = 5; //事件类型
+
+	optional uint32 state = 6; //事件状态 ulState enum
+
+	optional uint32 cstate = 7; //事件改变状态 ulCState enum
+
+	optional uint32 obsState = 8; //障碍物状态 obsState
+
+	optional double diffDistance = 9; //障碍物当前位置与椭圆中心点坐标之间的距离 diffDistance
+
+	optional uint32 ulMaxWaitTime = 10; //最大等待时长 ulMaxWaitTime
+
+	optional double CenterPostion_x = 11; //中心点坐标 CenterPostion.dbx
+
+	optional double CenterPostion_y = 12; //中心点坐标 CenterPostion.dby
+
+	optional double DirecRad = 13; //方向角 DirecRad
+	
+	optional uint32 LargeMajorAxisRadius = 14; //椭圆长轴数值
+	
+	optional uint32 LargeMinorAxisRadius = 15;
+	
+	optional uint32 SmallMajorAxisRadius = 16;
+
+	optional uint32 SmallMinorAxisRadius = 17; //椭圆短轴数值
+	
+	optional uint64 newOBSUUID = 18; //uuid stLastestInfo.ulUUID
+
+	optional uint32 newOBSframe = 19; //当前障碍物帧数 stLastestInfo.ulFrame.first
+
+	optional uint32 newOBSsubframe = 20; //当前障碍物子帧数 stLastestInfo.ulFrame.second
+
+	optional double newOBSx = 21; //当前障碍物坐标 
+
+	optional double newOBSy = 22; //当前障碍物坐标
+
+	optional uint32 newOBSdrsu = 23; //当前障碍物检测drsu
+
+	optional uint32 newOBSlane = 24; //当前障碍物车道
+
+	optional uint32 newOBSHDlane = 25; //当前障碍物对应高精地图的laneid
+
+	optional uint32 newOBSHDconnection = 26; //当前障碍物对应高精地图的connectionid
+	
+	optional uint64 firstOBSUUID = 27;
+
+	optional uint32 firstOBSframe = 28; //初始障碍物帧数
+
+	optional uint32 firstOBSsubframe = 29; //初始障碍物子帧数
+
+	optional double firstOBSx = 30; //初始障碍物坐标
+
+	optional double firstOBSy = 31; //初始障碍物坐标
+
+	optional uint32 firstOBSdrsu = 32; //初始障碍物检测drsu
+
+	optional uint32 firstOBSlane = 33; //初始障碍物车道
+
+	optional uint32 firstOBSHDlane = 34; //初始障碍物对应高精地图的laneid
+
+	optional uint32 firstOBSHDconnection = 35; //初始障碍物对应高精地图的connectionid
+
+    optional string strDetectorInfo = 36; //事件参考的检测器ID,格式如: 1010,1011,1012
+
+    optional string strExtParam = 37; //扩展参数，用于事件应急调试
+
+    optional uint32 ulDrcId = 38;  //Drc ID
+
+    optional int32  vehicleType = 39;// 0:普通车辆 ; 1: 警车; 2:工程车
+
+    optional string strPlateNo = 40;  //当前障碍物车牌
+}
+
+
+message TRAFFIC_ACCIDENT_OBS
+{
+	optional uint64 ulUUID = 1;  //当前障碍物id
+	
+	optional uint32 ulFrame_first = 2;  //当前障碍物的帧数
+	
+	optional uint32 ulFrame_second = 3;  //当前障碍物的子帧数
+	
+	optional double dbVehicle_position_x = 4; //当前障碍物坐标 
+
+	optional double dbVehicle_position_y = 5; //当前障碍物坐标
+	
+	optional uint32 ulMaster_drsuid = 6;   //master drsu id
+	
+	optional uint32 ulMaster_landid = 7;  //lane id
+	
+	optional uint32 ulHD_laneid = 8;  //高精地图的lane id
+	
+	optional uint32 ulHD_ConnectionId = 9;  //高精地图的connection id
+	
+	optional string strPlateNo = 10;  //车牌
+	
+	optional int32 isHighFlow = 11;  //是否是高流量区 1，高流量区  0，不是高流量区
+	
+	optional uint64 ulAb_parking_eventId = 12;  //关联的异常停车的事件id
+}
+
+message DRC_EVENT_DEBUG_TRAFFIC_ACCIDENT
+{
+	optional uint32 frame = 1; //帧数 ulSystemFrame
+
+	optional uint32 subframe = 2; //子帧数 ulSystemSubFrame
+	
+	optional uint64 eventId = 3; //事件id Base Event id
+	
+	optional if_proto_common.EVENT_TPYE_E eventype = 4; //事件类型
+	
+	optional uint32 state = 5; //事件状态 ulState enum
+
+	repeated TRAFFIC_ACCIDENT_OBS stVehicleInfos = 6;
+
+    optional string strDetectorInfo = 7; //事件参考的检测器ID,格式如: 1010,1011,1012
+
+    optional string strExtParam = 8; //扩展参数，用于事件应急调试    
+
+	optional double CenterPostion_x = 9; //中心点坐标UTM_X 
+
+	optional double CenterPostion_y = 10; //中心点坐标UTM_Y
+
+    optional uint32 ulDrcId = 11;  //Drc ID
+}
+
+
+message NoConesEventInfo
+{
+    optional uint64 eventId = 1;        //事件ID
+    optional if_proto_common.EVENT_TPYE_E eventype = 2; //事件类型
+    repeated uint64 mergeEventId = 3;   //被合并的事件ID
+    repeated int32 slDetectorId = 4;    //检测器信息
+    optional double dbUtmx = 5;     //事件的位置
+    optional double dbUtmY = 6;
+    optional uint32 ulLowVehicleSize = 7;   //低速车数量
+    optional uint32 ulLowVehicleThreshold = 8;  //低速车数量阈值
+    optional uint32 ulRelieveCount = 9; //事件解除计数器
+}
+message NoConesAdjDetectorInfo
+{
+    optional int32 slDetectorId = 1;
+    optional double dbCoeff = 2;
+}
+message NoConesDetectorInfo
+{
+    optional int32 slId = 1;    //检测器ID
+    optional int32 slState = 2; //1表示未激活，2表示激活
+    optional uint32 ulVehiclesOfReach = 3;  //本周期到快速车数量
+    optional uint32 ulHistoryVehicles = 4;  //历史到车数量（从检测器激活还是算起）
+    optional uint32 ulCycleOfNonReach = 5;  //未到车的周期数
+    optional uint32 ulMeanDt = 6;       //平均DT
+    optional uint32 ulMaxDt = 7;        //最大DT
+    repeated NoConesAdjDetectorInfo stAdjInfos = 8; //邻检测器ID 系数
+    optional double dbP = 9;      //计算出的概率
+    optional double dbM = 10;     //计算使用的中间量
+    optional double dbS2 = 11;    //计算使用的中间量
+    optional int32  slAdjDetectorId = 12;    //通过slAdjDetectorId检测器将系数算出
+    optional double dbUtmx = 13;
+    optional double dbUtmY = 14;
+    optional uint32 ulActiveSource = 15; //激活原因 1：工程车激活 2：低车流激活 3：额外激活
+    optional uint32 ulActiveFrame = 16; //激活时间 frame
+    optional uint32 ulActiveSubFrame = 17;//激活时间 subframe
+    optional uint32 ulVels = 18;    //累计快速车经过的数量（从没有工程车或行人开始算起，否则为0）
+	optional uint32 ulLowVehiclesOfReach = 19;  //本周期到慢速车数量
+	optional uint32 ulPederstrianOfReach = 20;  //本周期行人数量
+	optional uint32 ulEngineerOfReach = 21;  //本周期工程车数量
+	optional uint32 ulStaticVehiclesOfReach = 22;  //本周期静止车数量
+	optional int32  slConesCount = 23;   //锥桶数量：-1请求不到锥桶信息或是很久之前的请求  0无锥桶
+    optional string strConesIp = 24;    //锥筒所在相机ip
+	optional uint32 ulCurrentCycle = 25;  //当前周期数
+	optional uint32 ulInactiveCycle = 26;  //待失活周期数（有行人、工程车、锥桶、合入事件时为0）
+	optional uint32 ulExistStaticVehicleCycle = 27; //从检测器激活算起，含有静止车辆的周期数
+}
+//无锥桶调试信息
+message DRC_EVENT_DEBUG_NO_CONES
+{
+    optional uint32 ulFrame = 1;
+    optional uint32 ulSubFrame = 2;
+    optional uint32 ulCycle = 3; //当前周期
+    repeated NoConesEventInfo stEventInfo = 4; //事件信息
+    repeated NoConesDetectorInfo stDetectorInfo = 5; //检测器信息
+    optional uint32 ulDrcId = 6;
+}
+
+
+message TrafficJamEventInfo
+{
+    optional uint64 eventId = 1;        //事件ID
+    optional if_proto_common.EVENT_TPYE_E eventype = 2; //事件类型
+    repeated uint64 mergeEventId = 3;   //被合并的事件ID
+    repeated int32 slDetectorId = 4;
+    optional double dbUtmx = 5;     //事件的位置
+    optional double dbUtmY = 6;
+}
+
+message TrafficJamDetectorInfo
+{
+    optional int32 slId = 1;    //检测器ID
+    optional int32 slState = 2; //1表示未激活，2表示激活
+    optional double dbAvgSpeed = 3; //监测点平均速度
+    optional int32 slVels = 4; //监测点过车数量
+    optional double dbUtmx = 5;
+    optional double dbUtmY = 6;
+}
+//拥堵调试信息
+message DRC_EVENT_DEBUG_TRAFFIC_JAM
+{
+    optional uint32 ulFrame = 1;
+    optional uint32 ulSubFrame = 2;
+    optional uint32 ulCycle = 3; //当前周期
+    repeated TrafficJamEventInfo stEventInfo = 4; //事件信息
+    repeated TrafficJamDetectorInfo stDetectorInfo = 5; //检测器信息
+    optional uint32 ulDrcId = 6;
+}
+
+//监测器信息
+message DRC_EVENT_DEBUG_DETECTOR_INFO
+{
+    repeated TrafficJamDetectorInfo detectorInfos = 1;
+    optional uint32 ulFrame = 2;
+    optional uint32 ulSubFrame = 3;
+    optional uint32 ulDrcId = 4;
+}
+
+//超低速事件调试信息
+message DRC_EVENT_DEBUG_ULTRA_LOW_SPEED
+{
+	optional uint32 frame = 1; //帧数 ulSystemFrame
+	optional uint32 subframe = 2; //子帧数 ulSystemSubFrame
+	optional uint64 eventId = 3; //事件id Base Event id
+	optional if_proto_common.EVENT_TPYE_E eventype = 4; //事件类型
+    optional uint32 ulstate = 5; //事件状态 0:创建, 1:更新, 2:解除
+    optional uint64 ulUUID = 6;  //当前障碍物id
+    optional double dbObsUtmx = 7; //障碍物坐标_X
+    optional double dbObsUtmY = 8; //障碍物坐标_Y   
+    optional int32 slId = 9;    //检测器ID
+    optional double dbAvgSpeed = 10; //监测点平均速度 ,单位m/s
+    optional double dbObsSpeed = 11; //障碍物速度 , 单位m/s
+	optional uint32 ulDrsuId = 12;   //drsu id
+	optional uint32 ulLandId = 13;  //lane id
+	optional uint32 ulHDlaneId = 14;  //高精地图的lane id
+	optional uint32 ulHDConnectionId = 15;  //高精地图的connection id
+	optional string strPlateNo = 16;  //车牌    
+    optional string strDetectorInfo = 17; //事件参考的检测器ID,格式如: 1010,1011,1012
+    optional uint32 ulDrcId = 18;
+}
+
+//低速事件调试信息
+message DRC_EVENT_DEBUG_LOW_SPEED
+{
+	optional uint32 frame = 1; //帧数 ulSystemFrame
+	optional uint32 subframe = 2; //子帧数 ulSystemSubFrame
+	optional uint64 eventId = 3; //事件id Base Event id
+	optional if_proto_common.EVENT_TPYE_E eventype = 4; //事件类型
+    optional uint32 ulstate = 5; //事件状态 0:创建, 1:更新, 2:解除
+    optional uint64 ulUUID = 6;  //当前障碍物id
+    optional double dbObsUtmx = 7; //障碍物坐标_X
+    optional double dbObsUtmY = 8; //障碍物坐标_Y   
+    optional int32 slId = 9;    //检测器ID
+    optional double dbAvgSpeed = 10; //监测点平均速度 ,单位m/s
+    optional double dbObsSpeed = 11; //障碍物速度 , 单位m/s
+	optional uint32 ulDrsuId = 12;   //drsu id
+	optional uint32 ulLandId = 13;  //lane id
+	optional uint32 ulHDlaneId = 14;  //高精地图的lane id
+	optional uint32 ulHDConnectionId = 15;  //高精地图的connection id
+	optional string strPlateNo = 16;  //车牌  
+    optional string strDetectorInfo = 17; //事件参考的检测器ID,格式如: 1010,1011,1012
+    optional uint32 ulDrcId = 18;
+}
+
+message ConeInfo
+{
+    optional double dbObsUtmx = 1; //障碍物坐标_X
+    optional double dbObsUtmY = 2; //障碍物坐标_Y 
+	optional uint32 ulConfidence = 3; //可信度
+	optional uint64 ullTimeStamp = 4; //向OD发起询问的时间
+}
+
+//二次检测调试信息
+message DRC_EVENT_DEBUG_ETOD_CHECK
+{
+    optional uint32 ulFrame = 1;
+    optional uint32 ulSubFrame = 2;
+	optional uint32 ulDrcId = 3;
+    repeated ConeInfo stConesInfo = 4; //锥桶信息
+}

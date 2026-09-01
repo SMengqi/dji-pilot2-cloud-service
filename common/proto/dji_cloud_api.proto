@@ -1,0 +1,428 @@
+syntax = "proto2";
+
+package dji_cloud;
+
+message planned_path_points_array
+{
+    optional double longitude = 1; // 经度
+    optional double latitude = 2; // 纬度
+    optional float height = 3; // 高度
+}
+
+message transition_wayline_info_message
+{
+    optional uint32 last_point_type = 1; // 上一个航点类型
+    repeated planned_path_points_array planned_path_points = 2; // 航线规划路径点数组
+}
+
+message ext_message 
+{
+    optional uint32 current_waypoint_index = 1; // 当前执行到的航点数
+    optional uint32 wayline_mission_state = 2;  // 航线任务状态 {"0":"断连","1":"不支持该航点",
+                                                // "2":"航线准备状态,可上传文件,可执行已有文件",
+                                                // "3":"航线文件上传中",
+                                                // "4":"触发开始命令，飞行器触发读航线等逻辑，还未开始任务，处于准备状态",
+                                                // "5":"进入航线,到第一个航点",
+                                                // "6":"航线执行",
+                                                // "7":"航线中断，触发条件：1.用户主动暂停 2.飞控异常",
+                                                // "8":"航线恢复","9":"航线停止"}
+    optional uint32 media_count = 3;            // 本次航线任务执行产生的媒体文件数量
+    optional string track_id = 4;               // 航迹 id
+    optional string flight_id = 5;              // 任务 ID
+    optional break_point_message break_point = 6; // 航线断电信息
+    optional uint32 wayline_id = 7;             // 当前在作业的航线id
+    optional transition_wayline_info_message transition_wayline_info = 8; // 航线切换信息
+}
+
+message progress_message
+{
+    optional uint32 current_step = 1; // 执行步骤
+    optional uint32 percent = 2;      // 进度值
+    optional string step_key = 3;     // 步骤描述
+    optional uint32 step_result = 4;  // 步骤结果
+    optional uint32 total_steps = 5;  // 总步骤数
+}
+
+message data_output
+{
+    optional string status = 1;
+    // 上报航线任务进度
+    optional ext_message ext = 2;
+    optional progress_message progress = 3;
+    // status 见1
+}
+
+message reply_data
+{
+    optional uint32 result = 1;
+    optional data_output output = 2;
+    repeated string flight_ids = 3;
+    optional string flight_id = 4;
+    optional string in_flight_wayline_id = 5;
+    optional progress_message progress = 6;
+    optional uint32 status = 7;
+    optional uint32 way_point_index = 8;
+    optional uint64 timestamp = 9;
+
+    // drc 高频osd数据
+    optional double attitude_head = 10;
+    optional double elevation = 11;
+    optional double gimbal_pitch = 12;
+    optional double gimbal_roll = 13;
+    optional double gimbal_yaw = 14;
+    optional double height = 15;
+    optional double home_distance = 16;
+    optional double horizontal_speed = 17;
+    optional double latitude = 18;
+    optional double longitude = 19;
+    optional double speed_x = 20;
+    optional double speed_y = 21;
+    optional double speed_z = 22;
+    optional double ultrasonic_height = 23;
+    optional double vertical_speed = 24;
+    optional double wind_direction = 25;
+    optional double wind_speed = 26;
+
+}
+
+message services_reply    // 指令响应
+{
+    optional string tid = 1;
+    optional string bid = 2;
+    optional int64 timestamp = 3;
+    optional string method = 4;
+    optional reply_data data = 5;
+    optional uint32 need_reply = 6;
+    optional string gateway = 7;
+    // DRC 心跳
+    optional uint32 seq = 8;
+}
+
+
+
+message data_brokers
+{
+    optional string address = 1;
+    optional string client_id = 2;
+    optional bool enable_tls = 3;
+    optional double expire_time = 4;
+    optional string username = 5;
+    optional string password = 6;
+}
+
+message simulate_message {
+    optional uint32 is_enable = 1;
+    optional double latitude = 2;
+    optional double longitude = 3;
+    optional double altitude = 4;
+}
+
+message file_info {
+    optional string url = 1; // 文件URL
+    optional string fingerprint = 2; // 文件MD5签名
+}
+
+message ready_conditions_message {
+    optional uint32 battery_capacity = 1; // 电池容量
+    optional uint32 begin_time = 2;       // 任务可执行时段的开始时间
+    optional uint32 end_time = 3;         // 任务可执行时段的结束时间
+}
+
+message executable_conditions_message {
+    optional uint32 storage_capacity = 1; // 存储容量
+}
+
+message break_point_message {
+    optional uint32 index = 1;  // 断点索引
+    optional uint32 state = 2; // 断点状态 {"0":"在航段上","1":"在航点上"}
+    optional float progress = 3; // 当前航段进度 {"max":"1.0","min":"0"}
+    optional uint32 wayline_id = 4; // 航线ID
+
+    optional uint32 break_reason = 5; // 中断原因
+    optional float latitude = 6;      // 断点纬度
+    optional float longitude = 7;     // 断点经度
+    optional float height = 8;        // 断电相对地球椭球面高度
+
+    optional double attitude_head = 9;    // 断点航向
+
+
+}
+
+message output_message {
+    optional file_info file = 1; // 航线文件信息
+}
+
+message points_array {
+    optional double longitude = 1;
+    optional double latitude = 2;
+    optional float height = 3;
+}
+
+message request_data
+{
+    // 进入指令飞行控制模式
+    optional uint32 hsi_frequency = 1;     // HSI频率
+    optional uint32 osd_frequency = 2;     // OSD频率
+    optional data_brokers mqtt_broker = 3; // MQTT服务器信息
+
+    // 负载控制-双击成为AIM
+    optional string camera_type = 4;    // 相机类型 
+    optional bool   locked = 5;         // 机头和云台的相对关系是否锁定
+    optional string payload_index = 6;  // 相机枚举
+    optional double x = 7;              // 目标坐标 x
+    optional double y = 8;              // 目标坐标 y
+    // 负载控制-云台拖拽
+    optional double pitch_speed = 46;   // 俯仰速度
+    optional double yaw_speed = 47;     // 偏航速度
+
+    // 负载控制-重置云台
+    optional uint32 reset_mode = 9;     // 重置模式 {"0":"回中","1":"向下","2":"偏航回中","3":"俯仰向下"}
+    // 负载控制-框选变焦
+    optional float  width = 10;         // 目标框宽度
+    optional float  height = 11;        // 目标框高度
+    // 负载控制-变焦
+    optional float zoom_factor = 45;    // 缩放因子 {"max":"112.0","min":"2.0"}
+
+    // 一键起飞指令
+    optional double target_latitude = 12;            // 目标纬度
+    optional double target_longitude = 13;           // 目标经度
+    optional float  target_height = 14;              // 目标高度
+    optional float  security_takeoff_height = 15;    // 安全起飞高度
+    optional uint32 rth_mode = 16;                   // 返航模式设置值 {"0":"智能高度","1":"设定高度"}
+    optional uint32 rth_altitude = 17;               // 返航高度
+    optional uint32 rc_lost_action = 18;             // 遥控器失控动作 {"0":"悬停","1":"着陆(降落)","2":"返航"}
+    optional uint32 commander_mode_lost_action = 19; // 指点飞行失控动作 {"0":"继续执行指点飞行任务","1":"退出指点飞行任务，执行普通失控行为"}
+    optional uint32 commander_flight_mode = 20;      // 指点飞行模式设置值 {"0":"智能高度飞行","1":"设定高度飞行"}
+    optional float  commander_flight_height = 21;    // 指点飞行高度
+    optional string flight_id = 22;                  // 飞行任务ID
+    optional uint32 max_speed = 23;                  // 最大速度
+    optional simulate_message simulate_mission = 24; // 模拟任务
+    optional uint32 flight_safety_advance_check = 25;  // 飞行安全预检查 {"0":"关闭","1":"开启"}
+    
+    // DRC 心跳消息
+    optional int64 timestamp = 26;
+
+    // 下发航线任务
+    // flight_id 计划ID 见22
+    optional uint64 execute_time = 27;               // 开始执行时间
+    optional uint32 task_type = 28;                    // 任务类型 {"0":"立即任务","1":"定时任务","2":"条件任务"}
+    optional file_info file = 29;                      // 航线文件信息
+    optional ready_conditions_message ready_conditions = 30;  // 任务就绪条件
+    optional executable_conditions_message executable_conditions = 31;  // 任务可执行条件
+    optional break_point_message break_point = 32;     // 航线断点信息
+    // rth_altitude 返航高度 见17
+    // rth_mode 返航高度模式 见16
+    optional uint32 out_of_control_action = 33;        // 遥控器失控动作 {"0":"返航","1":"悬停","2":"降落"}
+    optional uint32 exit_wayline_when_rc_lost = 34;    // 航线失控动作 {"0":"继续执行航线任务","1":"退出航线任务，执行遥控器失控动作"}
+    optional uint32 wayline_precision_type = 35;       // 航线精度类型 {"0":"GPS 任务","1":"高精度 RTK 任务"}
+    // simulate_mission 是否在模拟器中执行任务 见24
+    // flight_safety_advance_check 飞行安全预检查 见25  
+
+    // 回应任务资源获取的请求
+    optional output_message output = 36;  // 
+    optional uint32 result = 37;        // 结果 {"0":"成功","1":"失败"}
+
+    // 暂停 航线
+    repeated string flight_ids = 38;  // 飞行任务ID列表
+
+    // 空中下发航线
+    optional string in_flight_wayline_id = 39;  // 飞行中航线ID
+
+    // 杆量控制
+    optional uint32 roll = 40;
+    optional uint32 pitch = 41;
+    optional uint32 throttle = 42;
+    optional uint32 yaw = 43;
+    optional uint32 gimbal_pitch = 44;
+
+    // flyto_point
+    optional string fly_to_id = 48;
+    // max_speed 最大飞行速度 见23
+    repeated points_array points = 49;
+}
+
+message services_down     // 指令下发
+{
+    optional string tid = 1;
+    optional string bid = 2;
+    optional int64 timestamp = 3;
+    optional string method = 4;
+    optional request_data data = 5;
+    optional string gateway = 6;
+    // DRC 心跳消息
+    optional uint32 seq = 7;
+}
+
+message drc_data {
+    optional uint32 result = 1;
+
+    optional uint32 psdk_index = 2;  // 负载设备索引
+    optional uint32 group = 3;
+    optional uint32 brightness = 4;  // 亮度
+    optional uint32 mode = 5;  // 模式
+    optional uint32 position = 6;  // 灯
+    optional int32 value = 7;  // 角度值  {"max": "+3°", "min": "-3°"}
+    optional bool save = 8;  // 是否保存设置 {"0":"否","1":"是"}
+
+    optional uint64 ts = 9;
+    optional uint32 seq = 10;
+
+    optional uint64 timestamp = 11;
+}
+
+message drc_up_down {
+    optional uint32 seq = 1;  // 心跳序列号
+    optional string method = 2;  // 方法名
+    optional drc_data data = 3;  // 数据
+    optional uint64 timestamp = 4;  // 时间戳
+}
+
+// ------------------------ 以下为 bxt 相关控制指令 ----------
+
+message flight_control_message {      // 飞行控制指令
+    required string action = 1;
+    required string trans_id = 2;
+    optional string direction = 3;
+    optional string distance = 4;
+    optional string angle = 5;
+    optional double longitude = 6;
+    optional double latitude = 7;
+    optional float height = 8;
+    optional uint32 max_speed = 9;
+}
+
+message waypoint_message {          // 航线指令
+    required string action = 1;
+    required string trans_id = 2;
+    optional string line_id = 3;
+    optional string file_name = 4;  // KMZ 文件名（仅日志/审计用）
+    optional string md5 = 5;        // KMZ 文件 md5 指纹
+    optional string url = 6;        // KMZ 文件下载 URL（Dock 拉取）
+}
+
+message kmz_request_message {      // crm KMZ 下载请求
+    optional string transId = 1;
+    optional string fileId = 2;
+}
+
+message response_data {
+    optional string id = 1;
+    optional string fileName = 2;
+    optional uint32 fileSize = 3;
+    optional string fileUrl = 4;
+    optional string md5 = 5;
+    optional string createTime = 6;
+    optional string fileBase64 = 7;
+    optional string duration = 8;
+}
+
+message kmz_response_message {      // crm KMZ 下载响应
+    optional string transId = 1;
+    optional uint32 code = 2;
+    optional string message = 3;
+    optional response_data data = 4;
+}
+
+message camera_control_message {      // 相机控制指令
+    required uint32 camera_zoom_direction = 1;
+    required string trans_id = 2;
+}
+
+message gimbal_control_message {      // 云台控制指令
+    required uint32 type = 1;
+    optional uint32 gimbal_direction = 2;
+    optional float gimbal_centerx = 3;
+    optional float gimbal_centery = 4;
+    optional float gimbal_width = 5;
+    optional float gimbal_height = 6;
+    optional float pitch = 7;
+    optional float yaw = 8;
+    optional float zoom_factor = 9;
+    required string trans_id = 10;
+}
+
+message code_message {    // 带有code码和描述的响应消息
+    required uint32 code = 1;
+    required string msg = 2;
+    optional string transId = 3;
+}
+
+message result_message {    // 执行指令的结果
+    required string result = 1;
+    required string transId = 2;
+}
+
+message payload_param {
+    optional double pitch = 1;
+    optional double yaw = 2;
+    optional float zoom_factor = 3;
+}
+
+message remote_debug_message {
+    enum Target {
+        TARGET_DEBUG = 0;
+        TARGET_COVER  = 1;
+        TARGET_UAV   = 2;
+    }
+    enum Action {
+        ACTION_ENABLE  = 0;
+        ACTION_DISABLE = 1;
+    }
+    optional Target target = 1;
+    optional Action action = 2;
+    optional string trans_id = 3;
+}
+
+message light_control {
+    enum Mode {
+        OFF = 0; // 关闭探照灯
+        ON  = 1; // 常量探照灯
+        FLASHING = 2; // 爆闪
+        FLASHING_FAST = 3; // 快速爆闪
+        FLASHING_ALTERNATE = 4; // 交替闪
+    }
+    enum Position {
+        LEFT_LIGHT = 0; // 左侧探照灯
+        RIGHT_LIGHT = 1; // 右侧探照灯
+    }
+    enum Direction {
+        LEFT = 0; // 向左
+        RIGHT = 1; // 向右
+    }
+    optional uint32 type = 1;
+    optional string trans_id = 2;
+    optional uint32 brightness = 3; // 亮度 0~100
+    optional Mode mode = 4; // 探照灯模式设置
+    optional Position position = 5; // 
+    optional Direction direction = 6; // 角度微调值
+}
+
+message speaker_control {
+    enum Mode {
+        // 单次播放
+        ONCE = 0;
+        // 循环播放
+        LOOP = 1;
+    }
+    enum VoiceType {
+        // 男声
+        MALE = 0;
+        // 女声
+        FEMALE = 1;
+    }
+    enum Language {
+        // 简体中文
+        CN = 0;
+        // 英文
+        EN = 1;
+    }
+    optional uint32 type = 1;
+    optional string trans_id = 2;
+    optional Mode play_mode = 3;
+    optional uint32 play_volume = 4; // 音量大小 0~100
+    optional string value = 5; // 播放内容 length: 1~128
+    optional VoiceType voice = 6; // 声音类型 
+    optional Language language = 7; // 语言类型
+    optional uint32 volume = 8; // 音量大小 0~100
+    optional uint32 speed = 9; // 语速大小 0~100
+}

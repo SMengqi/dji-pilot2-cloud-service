@@ -1,0 +1,199 @@
+syntax = "proto2";
+
+package dock3_osd;
+
+
+message air_conditioner_message {
+    optional uint32 air_conditioner_state = 1;  // 机场空调状态
+    optional uint32 switch_time = 2;            // 剩余等待可切换时间
+}
+
+message batteries_message {
+    optional uint32 capacity_percent = 1;  // 电池剩余电量
+    optional uint32 index = 2;             // 电池序号
+    optional uint32 voltage  = 3;          // 电压
+    optional float temperature = 4;        // 温度
+}
+
+message battery_maintenance_message {
+    optional uint32 maintenance_state = 1;  // 电池维护状态
+    optional uint32 maintenance_time_left = 2;  // 剩余维护时间
+    optional uint32 heat_state = 3;
+    repeated batteries_message batteries = 4;
+}
+
+message maintain_array_message {
+    optional uint32 state = 1;
+    optional uint32 last_maintain_type = 2;
+    optional uint32 last_maintain_time = 3;
+    optional uint32 last_maintain_work_sorties = 4;
+}
+
+message maintain_status_message {
+    repeated maintain_array_message maintain_status_array = 1;
+}
+
+message position_state_message {
+    optional uint32 is_calibration = 1;  // 定位标定
+    optional uint32 is_fixed = 2;        // 是否收敛
+    optional uint32 quality = 3;         // 搜星档位
+    optional uint32 gps_number = 4;      // GPS搜星数量
+    optional uint32 rtk_number = 5;      // RTK搜星数量
+
+}
+
+message charge_state_message {
+    optional uint32 capacity_percent = 1; // 电量百分比
+    optional uint32 state = 2;            // 充电状态
+}
+
+message backup_battery_message {
+    optional uint32 switch = 1;  // 备份电池开关
+    optional uint32 voltage = 2; // 备用电池电压
+    optional float temperature = 3; // 备用电池温度
+}
+
+message alternate_land_point_message {
+    optional float longitude = 1; // 经度
+    optional float latitude = 2; // 纬度
+    optional float safe_land_height = 3; // 安全降落高度
+    optional uint32 is_configured = 4; // 是否设置备降点
+    optional float height = 5; // 椭球高度
+}
+
+message storage_message {
+    optional uint32 total = 1; // 总容量
+    optional uint32 used = 2; // 已用容量
+}
+
+message wireless_link_message {
+    optional uint32 dongle_number = 1; // 图传dongle数量
+    optional uint32 four_g_link_state = 2 [json_name = "4g_link_state"]; // 4G链路状态
+    optional uint32 sdr_link_state = 3;
+    optional uint32 link_workmode = 4;
+    optional uint32 sdr_quality = 5;
+    optional uint32 four_g_quality = 6 [json_name = "4g_quality"];
+    optional uint32 four_g_uav_quality = 7 [json_name = "4g_uav_quality"];
+    optional uint32 four_g_gnd_quality = 8 [json_name = "4g_gnd_quality"];
+    optional float sdr_freq_band = 9;
+    optional float four_g_freq_band = 10 [json_name = "4g_freq_band"];
+}
+
+message media_file_detail_message {
+    optional uint32 remain_upload = 1; // 剩余上传容量
+}
+
+message network_state_message {
+    optional uint32 type = 1; // 网络类型
+    optional uint32 quality = 2; // 网络质量
+    optional uint32 rate = 3; // 网络速率
+}
+
+message sub_device_message {
+    optional string device_sn = 1; // 设备序列号
+    optional string device_model_key = 2; // 子设备枚举值
+    optional uint32 device_online_status = 3; // 机场停机坪上的飞行器开机状态
+    optional uint32 device_paired = 4; // 设备配对状态
+}
+
+message self_converge_coordinate_message {
+    optional double longitude = 1; // 经度
+    optional double latitude = 2; // 纬度
+    optional double height = 3; // 高度
+}
+
+message relative_alternate_land_point_message {
+    optional double longitude = 1; // 经度
+    optional double latitude = 2; // 纬度
+    optional float safe_land_height = 3; // 安全降落高度
+    optional uint32 status = 4; // 状态
+}
+
+message departure_point_message {
+    optional double longitude = 1; // 经度
+    optional double latitude = 2; // 纬度
+    optional float height = 3; // 高度
+}
+
+message sdr_message {
+    optional uint32 down_quality = 1; // 下行质量
+    optional float frequency_band = 2; // 频率带宽
+    optional uint32 up_quality = 3; // 上行质量
+}
+
+message tilt_angle_message {
+    optional uint32 valid = 1; // 是否有效
+    optional float value = 2; // 机头倾斜角度
+}
+
+message data_message {
+    optional uint32 home_position_is_valid = 1;            // home点有效性
+    optional float heading = 2;                            // 机场朝向角
+    optional air_conditioner_message air_conditioner = 3;  // 机场空调工作状态信息
+    optional battery_maintenance_message drone_battery_maintenance_info = 4; // 飞行器电池保养信息
+    optional maintain_status_message maintain_status = 5;  // 保养状态
+    optional position_state_message position_state = 6;    // 搜星状态
+    optional uint32 emergency_stop_state = 7;              // 紧急停止按钮状态
+    optional charge_state_message drone_charge_state = 8;  // 飞行器充电状态
+    optional backup_battery_message backup_battery = 9;    // 机场备用电池信息
+    optional uint32 alarm_state = 10;                      // 机场声光报警状态
+    optional uint32 battery_store_mode = 11;               // 电池运行模式
+    optional uint64 activation_time = 12;                  // 机场激活时间
+    optional double height = 13;                           // 机场高度
+    optional alternate_land_point_message alternate_land_point = 14; // 备用降落点信息
+    optional uint64 first_power_on = 15;                   // 首次上电时间
+    optional storage_message storage = 16;                 // 存储信息
+    optional float working_current = 17;                   // 工作电流
+    optional uint32 working_voltage = 18;                  // 工作电压
+    optional float humidity = 19;                          // 舱内湿度
+    optional float temperature = 20;                       // 舱内温度
+    optional float environment_temperature = 21;           // 环境温度
+    optional float wind_speed = 22;                        // 风速
+    optional uint32 rainfall = 23;                         // 降雨量
+    optional wireless_link_message wireless_link = 24;  // 图传链路
+    optional media_file_detail_message media_file_detail = 25; // 媒体文件上传细节
+    optional uint32 job_number = 26;                       // 机场累计作业次数
+    optional uint32 drone_in_dock = 27;                    // 无人机是否在机库内 {"0":"舱外","1":"舱内"}
+    optional network_state_message network_state = 28;     // 网络状态
+    optional uint32 supplement_light_state = 29;           // 补光灯状态
+    optional uint32 cover_state = 30;                      // 机库盖状态
+    optional sub_device_message sub_device = 31;           // 子设备信息
+    optional uint32 flighttask_step_code = 32;             // 机场任务状态 {"0":"作业准备中","1":"飞行作业中","2":"作业后状态恢复","3":"自定义飞行区更新中","4":"地形障碍物更新中","5":"任务空闲","255":"飞行器异常","256":"未知状态"}
+    optional uint32 mode_code = 33;                        // 机场状态 {"0":"空闲中","1":"现场调试","2":"远程调试","3":"固件升级中","4":"作业中","5":"待标定"}
+    optional double longitude = 34;                        // 经度
+    optional double latitude = 35;                         // 纬度
+    optional uint32 drc_state = 36;                        // DRC链路状态 {"0":"未连接","1":"连接中","2":"已连接"}
+    optional self_converge_coordinate_message self_converge_coordinate = 37; // 自收敛坐标信息
+
+    // 官方文档中没有提及，但实际数据中存在
+    optional uint32 acc_time = 38;                       //
+    optional uint32 deployment_mode = 39;                // 
+    optional relative_alternate_land_point_message relative_alternate_land_point = 40; // 相对备用降落点信息
+    optional uint32 electric_supply_voltage = 41;          // 供电电压
+    optional double acdc_power_input = 42;                 // AC/DC电源输入
+    optional uint32 poe_link_status = 43;                  // POE链路状态
+    optional float poe_power_output = 44;                  // POE电源输出
+    optional uint32 gimbal_holder_state = 45;              // 机头架状态
+    optional bool temp_mode_state = 46;                    // 临时模式状态
+    optional uint32 silent_mode = 47;                      // 静音模式
+    optional uint32 putter_state = 48;                     // 推杆状态
+    optional departure_point_message departure_point = 49; // 起飞点信息
+    optional uint32 departure_point_status = 50; // 起飞点状态
+    optional uint32 flighttask_prepare_capacity = 51; // 机场任务准备能力
+    optional sdr_message sdr = 52; // SDR信息
+    optional tilt_angle_message tilt_angle = 53; // 机头倾斜角度信息
+    optional uint32 user_experience_improvement = 54; // 用户体验改进
+    optional bool a_connect_b_special_solution = 55; // A连B特殊方案标志（新固件新增）
+    optional string country = 56; // 国家代码（新固件新增）
+    optional string app_version = 57; // 机场固件版本号（新固件新增，实际数据中存在）
+    optional uint32 capacity_percent = 58; // 机场电量百分比（新固件新增，注意与drone_charge_state.capacity_percent不同）
+
+}
+
+message Dock3OsdData {
+    optional string tid = 1;
+    optional string bid = 2;
+    optional uint64 timestamp = 3;
+    optional string gateway = 4;
+    optional data_message data = 5;
+}

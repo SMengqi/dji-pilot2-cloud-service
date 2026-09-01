@@ -1,0 +1,265 @@
+syntax = "proto2";
+package if_drc_fusion;
+
+import "bxt.obstacle_v2.proto";
+import "bxt.common.Header.proto";
+import "if_proto_common.proto";
+import "bxt.common.math.Vector3d.proto";
+
+message dedi_drsu_info_fusion
+{
+    repeated uint32 ulGlobal_drsu_id = 1;
+}
+
+message drsu_info_report
+{
+    optional uint32 ulGlobal_drsu_id = 1;
+    optional if_proto_common.Header stHeader = 2;
+	repeated if_proto_common.trafficLight astTrafficLight = 3;
+	repeated if_proto_common.Obstacle astObstacle = 4;
+	repeated if_proto_common.RoadSurface astRoadSurface= 5;
+}
+
+message rail_info_fusion
+{
+    optional if_proto_common.AREA_TYPE_E ularea_type = 1; // AREA_TYPE_E
+    optional if_proto_common.Header stHeader = 2;
+	repeated if_proto_common.trafficLight astTrafficLight = 3;
+	repeated if_proto_common.Obstacle astObstacle = 4;
+}
+
+enum LANE_TYPE_E
+{
+	LANE_TYPE_CITY = 1;
+	LANE_TYPE_OVERTAKE = 2;
+	LANE_TYPE_NORMAL = 3;
+	LANE_TYPE_HEAVY_VEHICLE = 4;
+}
+
+
+message lane_limit_speed
+{
+	optional int32 ullane_id = 1;
+	optional uint32 ullimit_speed = 2; //km/h
+	optional LANE_TYPE_E ullane_type = 3;
+	optional if_proto_common.Vector3d stroad_direction = 4;
+	optional uint32 ulBelongToWhichRoad = 5;//ROAD_NAME_TYPE_E
+}
+
+message special_section
+{
+	optional uint32 ultype = 1; //wisdom_freeway_drc_crm.ROAD_TYPE_E
+	optional uint32 ullength = 2;
+	optional if_proto_common.Vector3I ulposition = 3;
+}
+
+message zebra_crossing_point
+{
+	repeated if_proto_common.Vector3d ulPoint = 1;
+}
+
+message basic_cov_matrix_para
+{
+	optional double dbPosXCov = 1;// :m
+	optional double dbPosYCov = 2;// :m
+	optional double dbVelXCov = 3;// :m
+	optional double dbVelYCov = 4;// :m
+}
+message drc_lane_info
+{
+	optional uint32 ulDrcLaneId = 1;
+	optional uint32 ulLength = 2;
+}
+message drsu_fusion_cfg
+{
+	optional uint32 uldrsu_id = 1;
+	// optional uint32 uldrc_id = 2;
+	// optional if_proto_common.Vector3d ulroad_direction = 4;
+	optional if_proto_common.Vector3d uldrsu_position = 5;
+	repeated if_proto_common.Vector3d ulmonitoring_rage_list = 6;//1,2,3,4  1,2 near scope   3,4 far scope
+	// repeated lane_limit_speed ullane_limit_speed_list = 7;
+	// repeated special_section ul_special_section_list = 8;
+	optional uint32 ulsequence_id = 9;
+	// optional uint32 ulLengthToEntrance = 10;//:cm
+	// optional uint32 ulIsInSameDireAsRoad = 11;//0: means same
+	// optional uint32 ulBelongToWhichRoad = 12;//ROAD_NAME_TYPE_E
+	optional uint32 ulMonitorLength = 13;//:cm
+	repeated uint32 uladjdrsuid = 14;// adjacent drsu id.
+	// repeated uint32 uladjTrafficLightdrsuid = 15;//for banma traffic light report
+	repeated uint32 aulIPCameraDrsuId = 16;//store drsus which can record events of this drsu by IP Camera
+	// optional uint32 ulRoadNO = 17;//0 means main road, others mean sub road
+	// repeated uint32 ulHDLaneId = 18;
+	// repeated uint32 ulHDConnectionId = 19;
+	// repeated zebra_crossing_point ulZebraCrossing = 20;//1,2,3,4  1,2 near scope   3,4 far scope
+	repeated traffic_light_type_countdown_config traffic_light_type_countdown = 21;
+
+	optional uint32 ulGroupId = 22; // :0 ~ 7
+	optional double dbMornitorTheta = 23;// :radian
+	optional uint32 ulMonitorWidth = 24;// :m
+	optional basic_cov_matrix_para stBasicCovMatrixPara = 25;
+	repeated drc_lane_info astDiffDirLaneList = 26;
+	// repeated drc_lane_info astSameDirLaneList = 27;
+	// repeated if_proto_common.Vector3d dlSameRoadTciRangePointsList = 28;
+	repeated if_proto_common.Vector3d dlDiffRoadTciRangePointsList = 29;
+	optional uint32 ulRctpServeId = 30;
+}
+
+message drsu_fusion_cfg_file  //used by RCII&RCER&RCTP, save in OAM
+{
+	repeated drsu_fusion_cfg drsu_fusion_cfg_list = 1;
+}
+
+
+message bus_lane_time
+{
+    optional uint32 ulStarthoursOfBusLane = 1; //start hours
+    optional uint32 ulStartminutesOfBusLane = 2; //start minutes
+    optional uint32 ulEndhoursOfBusLane = 3; //end hours
+    optional uint32 ulEndminutesOfBusLane = 4; //end minutes
+}
+
+message jam_lane_info
+{
+    optional uint32 ulLaneLimitSpeed = 1; //KM/h
+    optional uint32 ulFluentSpeed = 2; //KM/h
+    optional uint32 ulBasicFluentSpeed = 3; //KM/h
+    optional uint32 ulLightJamSpeed = 4; //KM/h
+    optional uint32 ulModerateJamSpeed = 5; //KM/h
+}
+enum GENERIC_TYPE_E
+{
+	GENERIC_TYPE_UNKNOWN = 0;
+	GENERIC_TYPE_OTHERS = 1;
+	GENERIC_TYPE_HUMAN_LIKE = 2;
+	GENERIC_TYPE_VEHICLE = 3;
+}
+
+message diff_type_info
+{
+	optional GENERIC_TYPE_E eGenericType = 1;
+	optional uint32 ulDetectNumThres = 2;
+	optional uint32 ulRemoveDupThres = 3;
+	optional double dbLimitVelThres = 4; // m/s
+}
+
+message event_threshold_file  //used by RCTP, save in RCER
+{
+	// optional uint32 ulmax_parking_minutes = 1;  	//静止或者停车时间超过T分钟，认为是事故,默认是3分钟
+	optional uint32 ulstatic_ratio = 2;				//静止速度标准默认5%
+	optional uint32 ulexceed_speed_ratio = 3;		//超速标准默认120%
+	optional uint32 ulultra_low_speed_ratio = 4;	//超低速标准 默认40% （0~40%）
+	optional uint32 ullow_speed_ratio = 5;			//低速标准默认80% （超低速标准40%~ 80%）
+
+	optional uint32 ulspeed_state_duration_thres = 10;  	//持续多少帧速度状态迁移至低速、超低速、超速、静止、正常，默认5帧
+	optional uint32 ulspeed_event_duration_thres = 11;  	//持续多少帧算异常事故低速、超低速、超速、静止，默认4.5s，45帧
+	optional uint32 ulcongestion_vehicle_num = 12;  //整个DRSU的车辆密度大于DE（默认值70%）:
+	optional uint32 ulcongestion_seconds = 13;  	//单个DRSU下面车辆密度达到一定数目后持续多少秒算拥堵 : 300s
+	// optional uint32 ulcongestion_speed_thres = 14;  	//单个DRSU下面车辆平均速度低于该值后认为是拥堵 : 600cm/s
+	optional uint32 ulstatic_pos_thres = 15;		//静止异常障碍物位移超过该阈值提前认定为运动起来了，单位m
+
+	optional uint32 ulthrowing_objects_len = 20;  	//抛洒物的长  默认20cm
+	optional uint32 ulthrowing_objects_width = 21;  //抛洒物的宽  默认20cm
+	optional uint32 ulthrowing_objects_high = 22;  	//抛洒物的高  默认10cm
+
+	optional uint32 ulUnDetectNumThres = 30;  	//Threshold for undetected obstacles to remove, default = 10
+	optional uint32 ulDeltaFrameThres = 31;  	//DeltaFrame used to compute matching range, default = 2
+	optional uint32 ulStaticThres = 32;  	//Static Obstacle Tolerance, default = 100 cm
+	optional uint32 ulSimilarityThres = 33;  	//similairty threshold, default = 80
+	// optional uint32 ulAvoidGlitchThres = 34;  	//default = 10
+
+	optional uint32 ulTrafficLightThres = 40;    //城市道路红路灯等待阈值，单位帧号
+	optional uint32 ulOccupyEmergencyLaneThres = 41;    //高速道路非静止车辆占领紧急车道阈值，单位帧号
+	optional uint32 ulHeavyVehicleOccupyOvertakeLaneThres = 42;    //高速道路大/重型车辆占用正常/超车车道阈值，单位帧号
+
+	optional uint32 ulDebugFlag = 50;    //0 means off, 1 means on, output obsData csv
+	optional uint32 ulCityFlag = 51;    //0 means not in city, 1 means in city lane
+	optional double dbGlitchSpeed = 54;   //低于该值的速度，不作为求theta的依据 : m/s
+	optional double dbQCov = 55;   //Q阵的初始值
+	optional double dbGatingMaDisTrustRegion = 56;   //历史关联时的马氏距离合理范围 default:0.1
+	optional double dbGatingDisTrustRegion = 57;   //历史关联时的欧式距离合理范围 default:0.5
+	optional double dbGatingMaDis = 58;   //马氏距离的范围 default:10
+	optional double dbGatingDis = 59;   //欧氏距离的范围 default:12
+	optional uint32 ulDetectNumThres = 60;   //决定观测数据是否新增的阈值 default:10
+	optional uint32 ulLastObvInfoMemorySize = 61;   //上次关联信息的窗口大小 default:5
+	optional double dbMaxWeight = 62; //最大权重值 default: 100
+	optional uint32 ulExponentialSmoothWindowLength = 63; //用于指数平滑的窗口长度（逻辑上的） default: 50帧
+	optional double dbCheckVelStaticThres = 64; //当指数平滑后的速度低于该值时，判定为静止 default: 0.5m/s
+
+	repeated bus_lane_time aBusLaneTimes = 70;  //Bus lane time
+    optional uint32 ulOccupyBusLaneThres = 71;    //Threshold for occupy bus lane.Unit:frame.
+
+	repeated jam_lane_info astJamLaneInfoList = 72;
+
+	repeated diff_type_info astDiffTypeInf = 73;
+    optional double dbPersonWarningThetaThres = 74;     //违规行人theta角与道路theta角的差值阈值(弧度制)
+    optional double dbPersonWarningDisThres = 75;       //违规行人沿着theta角移动距离阈值
+    optional uint32 ulViolationPersonRelieveThres = 76; //违规行人解除阈值(帧数)
+}
+
+message acu_scope_area
+{
+    optional double dbXMin = 1;
+    optional double dbXMax = 2;
+    optional double dbYMin = 3;
+	optional double dbYMax = 4;
+	optional double dbZMin = 5;
+	optional double dbZMax = 6;
+}
+
+enum LINE_SPEED_DIRECTION_E
+{
+    DIRECTION_NORTH = 0;
+    DIRECTION_SOUTH = 1;
+	DIRECTION_EAST = 2;
+	DIRECTION_WEST = 3;
+}
+
+message acu_fusion_config_data
+{
+	optional LINE_SPEED_DIRECTION_E ulDirection = 1;
+	optional acu_scope_area astAcuCoordinateRange = 2;
+	repeated uint32 ulDrsuId = 3;
+}
+
+message acu_fusion_config_list  //used by ADSM, save in OAM
+{
+	repeated acu_fusion_config_data astDrFusionCfgList = 1;
+}
+
+message traffic_light_cfg
+{
+	optional string ullight_id = 1;
+	optional if_proto_common.Vector3d ullight_position = 2;//1m
+	optional string ulmapped_light_id = 3;
+}
+
+// message lane_centermarker_function  //used by BANMA
+// {
+//     optional uint32 ulHDLaneId = 1;
+//     optional double dA = 2;
+//     optional double dB = 3;
+// 	optional string ullight_id = 4;
+// 	optional uint32 ulHDType = 5;
+// }
+
+message traffic_info_cfg_file  //used by RCER, save in RCER
+{
+	repeated traffic_light_cfg traffic_light_cfg_list = 1;
+	// repeated lane_centermarker_function lane_centermarker_function_list = 2;
+}
+
+message traffic_light_color_countdown_config
+{
+	optional uint32 ulColor = 1;
+	optional uint32 ulIs_countDown = 2;
+	optional uint32 ulLastFrame = 3; //frame=100ms
+}
+
+message traffic_light_type_countdown_config
+{
+	optional string ullight_id = 1;
+	optional uint32 ulType = 2;
+	repeated traffic_light_color_countdown_config color_countdown = 3;
+}
+
+

@@ -1,0 +1,32 @@
+syntax = "proto2";
+package sensor_config;
+
+message CameraFormatCFG {
+    optional uint32 CameraWidth = 1;
+    optional uint32 CameraHeight = 2;
+    optional uint32 CameraPixelformat = 3;
+}
+
+message SensorConfig {
+    required string DeviceName = 1;
+    required uint32 DeviceID = 2;
+    required uint32 LocalModuleId = 3;
+    required uint32 DeviceType = 4;
+    required string DeviceModel = 5;
+    required string DeviceVersion = 6;
+    required uint32 RawDataReport = 7;
+    required uint32 RawDataReportPeriod = 8;
+    required uint32 ForwardDistance = 9;
+    required uint32 BackdDistance = 10;
+    required string DeviceIPv4 = 11;
+    required uint32 DevicePortID = 12;
+    required string LocalIPv4 = 13;
+    required uint32 LocalPortID = 14;
+    required string CalibrationFilePath = 15;
+    required uint32 ForTrafficLight = 16;
+    required CameraFormatCFG CameraFormat = 17;
+}
+
+message SensorList {
+    repeated SensorConfig sensor = 1;
+}

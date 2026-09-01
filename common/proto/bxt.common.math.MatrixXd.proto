@@ -1,0 +1,14 @@
+syntax = "proto2";
+package if_proto_common;
+
+message MatrixXd {
+  // Matrix data.
+  // The storage order of data is column major.
+  repeated double data = 1;
+
+  // The row number of the matrix.
+  optional int32 rows = 2 [default = 0];
+
+  // The col number of the matrix.
+  optional int32 cols = 3 [default = 0];
+};

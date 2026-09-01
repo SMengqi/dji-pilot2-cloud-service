@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package cmlc_comm;
+
+message Data {
+    double lon = 1; // 经度
+    double lat = 2; // 纬度
+    double lon84 = 3; // WGS84经度
+    double lat84 = 4; // WGS84纬度
+    string uasId = 5; // 无人机唯一标识
+    string orderId = 6; // 订单ID
+    double height = 7; // 对地高度
+    double altitude = 8; // 海拔高度
+    int64 flyTime = 9; // 飞行时长
+    double headingDegeree = 10; // 朝向角度
+    double speed = 11; // 速度
+    int64 time = 12; // 时间戳
+    string battery = 13; // 电池电量
+    string endurance = 14; // 剩余续航时间
+    string satellite = 15; // 卫星数量
+    string netWorkMode = 16; // 网络制式
+    string netWorkLevel = 17; // 信号强度
+    string mode = 18; // 飞行模式
+    string missionCreator = 19; // 任务执行者
+    string startTime = 20; // 开始时间
+    string missionStatus = 21; // 任务状态
+    string missionId = 22; // 任务ID
+    string exposureMode = 23; // 曝光模式
+    string ev = 24; // 曝光度
+    string iso = 25; // ISO
+    string aperture = 26; // 光圈
+    string shutter = 27; // 快门
+    string zoom = 28; // 缩放
+    string cameraMode = 29; // 相机模式
+    string cameraStatus = 30; // 相机状态
+    string continuousNumber = 31; // 连拍张数
+    string offLineTime = 32; // 离线时间
+    string uavStatus = 33; // 无人机状态
+    string controlStatus = 34; // 控制权状态
+    string missionName = 35; // 任务名称
+    string pathName = 36; // 路径名称
+    string executorId = 37; // 执行人ID
+    string missionModel = 38; // 任务模型
+    string pathId = 39; // 路径ID
+    int32 videoCode = 40; // 视频代码
+    string bindHangarCode = 41; // 绑定机库编码
+    string standalone = 42; // 网络制式
+    string maxTemperature = 43; // 最高温度
+    string minTemperature = 44; // 最低温度
+    int32 temperatureCode = 45; // 温度代码
+    string controlMode = 46; // 控制模式
+    int32 displayCode = 47; // 显示模式
+    string missionType = 48; // 任务类型
+    string forcedLanding = 49; // 强制降落标志
+    string readytoFly = 50; // 准备起飞标志
+    string readytoLand = 51; // 准备降落标志
+    string readytoHome = 52; // 准备返航标志
+    string uavRoll = 53; // 无人机滚转角
+    string uavPitch = 54; // 无人机俯仰角
+    string gimbalYaw = 55; // 云台偏航角
+    string gimbalPitch = 56; // 云台俯仰角
+    string gimbalRoll = 57; // 云台翻滚角
+    string runningMode = 58; // 当前运行模式
+    string wpNumber = 59; // 路径点数量
+}
+
+message Response {
+    int32 code = 1;
+    Data data = 2;
+    string msg = 3;
+    string exception = 4;
+    bool encrypt = 5;
+}

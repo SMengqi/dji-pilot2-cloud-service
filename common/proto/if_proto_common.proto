@@ -1,0 +1,363 @@
+syntax = "proto2";
+package if_proto_common;
+
+enum DRSU_REG_TYPE_E 
+{
+    DRSU_REG_SELF_START = 1;
+    DRSU_REG_RESTART = 2;
+    DRSU_REG_SOFTWARE_UPGRADE = 3;
+}
+
+enum DRSU_DEVICE_TYPE_E
+{
+    DEVICE_NULL = 0;
+    DEVICE_LIDAR = 1;
+    DEVICE_CAMERA = 2;
+    DEVICE_TRAFFIC_LIGHT = 3;
+    DEVICE_GPS = 4;
+    DEVICE_BUZZER = 5;
+    DEVICE_RADIATOR_FAN = 6;
+    DEVICE_IP_CAMERA = 7;
+    DEVICE_RADAR = 8;
+}
+
+message DEVICE_INFO_STRU 
+{
+    optional uint32 ulDeviceId = 1;
+    optional DRSU_DEVICE_TYPE_E ulDeviceType = 2;
+    optional string  aucDeviceModel = 3;
+    optional string  aucDeviceVersion = 4;
+    optional DRSU_DEV_WORKING_STATE_E ulWorkingStatus = 5; // DRSU_DEV_WORKING_STATE_E
+}
+
+enum DRSU_FORCCE_UPDATE_TYPE_E
+{
+    DRSU_UNFORCCE_UPDATE = 0;
+    DRSU_FORCCE_UPDATE = 1;
+} 
+
+enum DRSU_DEV_WORKING_STATE_E
+{
+    DRSU_DEV_WORKING_POWEROFF = 1;  // poweroff 
+    DRSU_DEV_WORKING_NORMAL = 2;    // poweron and working normal 
+    DRSU_DEV_WORKING_FRAME_RATE_ABNORMAL = 3;   // poweron but frame rate abnormal  
+    DRSU_DEV_WORKING_INTERRUPT = 4; // poweron but data interrupt  
+    DRSU_DEV_WORKING_NODATA = 5;    // poweron but no data 
+}
+message DEVICE_STATUS_STRU
+{
+    optional uint32 ulDeviceId = 1;
+    optional DRSU_DEV_WORKING_STATE_E ulWorkingStatus = 2; 
+}
+enum DRSU_ALARM_REPORT_PERIOD_E
+{
+    ALARM_REPORT_PERIOD_60S = 60;   //60s
+    ALARM_REPORT_PERIOD_120S = 120;
+    ALARM_REPORT_PERIOD_180S = 180;
+}
+
+
+//message Vector3I
+//{
+//    optional uint32 ulx = 1;  //East from the origin, in meters.
+//    optional uint32 uly = 2;  //North from the origin, in meters.
+//    optional uint32 ulz = 3;  //Up from the WGS-84 ellipsoid, in meters.
+//}
+enum DRSU_VIDEO_DEFINITION_TYPE_E
+{
+    DRSU_VIDEO_HIGH_DEFINITION = 1;
+    DRSU_VIDEO_STANDARD_DEFINITION = 2;
+}
+message DRSU_NET_DATE_STRU
+{ 
+    optional uint32 ulYear = 1; 
+    optional uint32 ulMonth = 2; 
+    optional uint32 ulDay = 3;
+}
+message DRSU_NET_TIME_STRU
+{ 
+    optional uint32 ulHour = 1;
+    optional uint32 ulMinute = 2; 
+    optional uint32 ulSecond = 3;
+}
+
+enum CAMER_PTZ_CTRL_E
+{
+    CTR_PTZ_UP = 1;
+    CTR_PTZ_DOWN = 2;
+    CTR_PTZ_LEFT = 3;
+    CTR_PTZ_RIGHT = 4;
+    CTR_PTZ_ZOOM_ADD = 5;
+    CTR_PTZ_ZOOM_DEC = 6;
+    CTR_PTZ_FOCUS_ADD = 7;
+    CTR_PTZ_FOCUS_DEC = 8;
+    CTR_PTZ_PERSET_POINT_MOVE = 9;
+    CTR_PTZ_PERSET_POINT_SET = 10;
+    CTR_PTZ_PERSET_POINT_DEL = 11;
+    CTR_EXTPTZ_FASTGOTO = 12;
+}
+message CAMERA_POINT_COORDINATE_STRU
+{
+   optional uint32 ulX = 1; // x(0~8191) 
+   optional uint32 ulY = 2; // y(0~8191)
+}
+
+message DRSU_AI_CFG_STRU
+{
+   optional DEV_FUNC_SWITCH_E ulIceSwitch = 1;
+   optional DEV_FUNC_SWITCH_E ulWetSwitch = 2;
+   optional DEV_FUNC_SWITCH_E ulFogSwitch = 3;
+} 
+message DevFailInfo
+{
+    optional uint32 ulDevId = 1;
+    optional uint32 ulErrCode = 2;
+}
+
+
+enum ALARM_LEVEL_E
+{
+    ALARM_LEVEL_ERROR = 0;
+    ALARM_LEVEL_FATAL = 1;
+}
+
+enum DRSU_DEVICE_POWER_TYPE_E  // same treatment:on and all on
+{
+    DRSU_DEVICE_POWER_NULL = 0;
+    DRSU_DEVICE_POWER_ON = 1;
+    DRSU_DEVICE_POWER_ALL_ON = 2;
+    DRSU_DEVICE_POWER_OFF = 3;
+    DRSU_DEVICE_POWER_ALL_OFF = 4;
+}
+
+enum DRSU_POWER_CTRL_TYPE_E
+{
+    DRSU_POWER_CTRL_NULL = 0;
+    DRSU_REBOOT_RESTART_PROCESS = 1;
+    DRSU_REBOOT_RESTART_SERVER = 2;
+    DRSU_DEREGISTER = 3;
+}
+
+enum AREA_TYPE_E
+{
+    AREA_TYPE_NUKNOWN = 0;
+    AREA_TYPE_NOMAL = 1;
+    AREA_TYPE_T_JUNCTION = 2;
+    AREA_TYPE_CROSSROAD = 3;
+}
+
+message PointUTM
+{
+    optional double dbx = 1;  //East from the origin, in meters.
+    optional double dby = 2;  //North from the origin, in meters.
+    optional double dbz = 3;  //Up from the WGS-84 ellipsoid, in meters.
+}
+
+message SwFtpInfo
+{
+    optional string str_domain_name = 1;  
+    optional uint32 ul_port_id = 2;
+    optional string str_path = 3;
+    optional string str_login_name = 4;
+    optional string str_password = 5;
+    optional string str_version_no = 6;
+}
+
+message LogFtpInfo
+{
+    optional string str_domain_name = 1;  
+    optional uint32 ul_port_id = 2;
+    optional string str_path = 3;
+    optional string str_login_name = 4;
+    optional string str_password = 5;
+}
+
+message AlarmInfo
+{
+    optional uint32 ulDevModeId = 1;
+    optional uint32 ulAlarmNo = 2;
+    optional ALARM_LEVEL_E ulAlarmLevel = 3;
+    optional string sAlarmDescription = 4;
+};
+
+message AlarmSimpleInfo
+{
+    optional uint32 ulDevId = 1;
+    optional uint32 ulAlarmNo = 2;
+}
+
+message trafficLight
+{
+    optional string ul_id = 1;
+
+    enum LIGHT_TYPE_E
+    {
+        LIGHT_TYPE_UNKNOWN_TYPE = 0;
+        LIGHT_TYPE_CYCLE = 1;
+        LIGHT_TYPE_LEFT = 2;
+        LIGHT_TYPE_STRAIGHT = 3;
+        LIGHT_TYPE_RIGHT = 4;
+        LIGHT_TYPE_TURN = 5;
+        LIGHT_TYPE_TURNLEFT = 6;
+        LIGHT_TYPE_STRAIGHT_LEFT = 7;
+        LIGHT_TYPE_COUNT_DOWN = 8;
+    };
+
+    enum LIGHT_COLOR_E
+    {
+        LIGHT_COLOR_UNKNOWN = 0;
+        LIGHT_COLOR_RED = 1;
+        LIGHT_COLOR_GREEN = 2;
+        LIGHT_COLOR_YELLOW = 3;
+		LIGHT_COLOR_BLACK = 4;
+    };
+
+    optional LIGHT_COLOR_E e_color = 2;  //LIGHT_COLOR_E
+    optional LIGHT_TYPE_E e_light_type = 3; //LIGHT_TYPE_E
+    optional uint32 ul_is_twinkle = 4; //bool
+    optional uint32 ul_countdown_time = 5;
+    optional double db_tracking_time = 6;	
+    optional double db_time_stamp = 7;
+}
+
+enum DEV_FUNC_SWITCH_E
+{
+    DEVFUNC_SWITCH_OFF = 0;
+    DEVFUNC_SWITCH_ON = 1;
+}
+
+enum LOG_FILE_TYPE
+{
+    LOG_FILE_DEBUG_E = 1;
+    LOG_FILE_EVENT = 2;
+    LOG_FILE_IMPORTANT = 3;
+    LOG_FILE_ALARM = 4;
+}
+
+
+message FansTempThreshold
+{
+    optional uint32 ulDrsuUpTemp = 1;  //30-50
+    optional uint32 ulDrsuDownTemp = 2;  //20-30
+}
+
+message DrsuLogLevelInfo
+{
+    optional uint32 ulDrsuDm = 1;
+    optional uint32 ulDrsuCtrl = 2;
+    optional uint32 ulDrsuCameraDp = 3;
+    optional uint32 ulDrsuLidarDp = 4;
+    optional uint32 ulDrsuDs = 5;
+};
+
+//wisdom_freeway
+enum EVENT_TPYE_E
+{
+    SINGLE_VEHICLE_TRAFFIC_ACCIDENT_WARNING = 1;
+    TWO_VEHICLES_TRAFFIC_ACCIDENT_WARNING = 2;
+    MULTIPLE_VEHICLES_TRAFFIC_ACCIDENT_WARNING = 3;
+    SINGLE_VEHICLE_ABNORMAL_PARKING_WARNING = 4;
+    TWO_VEHICLES_ABNORMAL_PARKING_WARNING = 5;
+    VEHICLE_CONVERSE_RUNNING_WARNING = 6;  
+    VIOLATION_PERSON_WARNING =7;  
+    ULTRA_LOW_SPEED_WARNING = 8;  
+    LOW_SPEED_WARNING = 9; 
+    SPOILING_WARNING = 10;
+    TRAFFIC_JAM_WARNING = 11;
+    ROAD_CLOSE_WARNING = 12;  
+    CROSS_LANE_DRIVING_WARNING = 13;  
+    ICING_WARNING = 14; 
+    WET_SLIDING_WARNING =15; 
+    CLUSTER_FOG_WARNING =16; 
+    EXCEED_SPEED_WARNING = 17;
+    ROAD_MAINTENANCE_WARNING = 18;
+	OCCUPY_EMERGENCY_LANE_WARNING = 19;
+	TRUCK_OCCUPY_THE_FAST_LANE_WARNING = 20;
+    //drc占用事件类型21紧急刹车，请从22继续，23,24用于应急车道柔性复用
+    BLOCK_PEDESTRIANS_WARNING = 22; //行人被遮挡事件（用于演示）结构体同违规行人
+    TRAFFIC_ACCIDENT_WARNING = 25;
+    ABNORMAL_PARKING_WARNING = 26;
+    OCCUPY_BUS_LANE_WARNING = 27;
+	ABNORMAL_CHANGE_LINE_WARNING = 28;
+    SPECIAL_VEHICLE_WARNING = 29;
+    NON_MOTORVEHICLE_WARNING = 30; //非机动车
+}
+
+message NetTimeStruct
+{
+    optional uint32 ulYear = 1;
+    optional uint32 ulMonth = 2;
+    optional uint32 ulDay = 3;
+    optional uint32 ulHour = 4;
+    optional uint32 ulMinute = 5;
+    optional uint32 ulSecond = 6;
+}
+
+message DrsuNetDevDiskState
+{
+    optional uint32 ulVolume = 1;
+    optional uint32 ulFreeSpace = 2;
+    optional uint32 ulStatus = 3;
+}
+
+enum CAMERA_PLATFORM_CTRL_E
+{
+    PLATFORM_CTR_PTZ_UP  = 1; 
+    PLATFORM_CTR_PTZ_DOWN = 2;  
+    PLATFORM_CTR_PTZ_LEFT = 3;  
+    PLATFORM_CTR_PTZ_RIGHT = 4;  
+    PLATFORM_CTR_PTZ_ZOOM_ADD = 5; 
+    PLATFORM_CTR_PTZ_ZOOM_DEC = 6;  
+    PLATFORM_CTR_PTZ_FOCUS_ADD = 7; 
+    PLATFORM_CTR_PTZ_FOCUS_DEC = 8;  
+    PLATFORM_CTR_PTZ_PERSET_POINT_MOVE = 9; 
+    PLATFORM_CTR_PTZ_PERSET_POINT_SET = 10; 
+    PLATFORM_CTR_PTZ_PERSET_POINT_DEL = 11; 
+    PLATFORM_CTR_EXTPTZ_FASTGOTO = 12; 
+}
+
+message CameraPointCoordinate
+{
+    optional uint32 ulX = 1;
+    optional uint32 uly = 2;
+}
+
+//message DrsuAIConfig
+//{
+//	optional uint32 ulIceSwitch = 1;
+//	optional uint32 ulWetSwitch = 2;
+//	optional uint32 ulFogSwitch = 3;
+//}
+
+message SystemStatus {
+  enum Module {
+    EPS = 0;
+    IBS = 1;
+    VCU = 2;
+    EPB = 3;
+    LOCALIZATION = 4;
+    HDMAP = 5;
+    CAMERA = 6;
+    LIDAR = 7;
+    RADAR = 8;
+    CONTROL = 9;
+  }
+
+  message Status {
+    // module name.
+    optional Module module = 1;
+
+    // is normal
+    optional bool normal = 2;
+  }
+
+  optional uint32 ul_global_id = 1;
+
+  repeated Status status = 2;
+}
+
+enum DRSU_SCHEME_TYPE
+{
+    SCHEME_FABU = 0;
+    SCHEME_HUAWI_ITS = 1;
+};

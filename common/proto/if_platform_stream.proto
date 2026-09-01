@@ -1,0 +1,42 @@
+syntax = "proto2";
+package platform_log;
+
+import "kafka_config.proto";
+
+enum STREAM_DATA_LOGGER_TYPE_E
+{
+    STREAM_DATA_LOGGER_TYPE_NULL = 0;     
+    STREAM_DATA_LOGGER_TYPE_KAFKA = 1;     
+    STREAM_DATA_LOGGER_TYPE_SQL = 2;      
+    STREAM_DATA_LOGGER_TYPE_REDIS = 3;      
+}
+
+enum STREAM_DATA_LOGGER_WORKING_MODE_E
+{
+    STREAM_DATA_LOGGER_MODE_NOMAL = 0;    //正式版本工作模式
+    STREAM_DATA_LOGGER_MODE_PLAYBACK = 1; //数据回放工作模式
+}
+
+
+message stream_logger_config_data
+{
+    optional string aucMessageName = 1; 
+    optional int32 ulFlag = 2;           //0:disable, 1:enable
+}
+
+message stream_logger_kafka_data
+{
+    optional kafka_config.kafka_producer_init_list producer_stream = 1;    
+    optional kafka_config.kafka_consumer_init_list consumer_stream = 2;      
+    optional string kafka_consumer_start_sec = 3; //起始时间格式 2022-01-01 00:00:00
+}
+
+
+message stream_logger_config_list
+{
+    optional STREAM_DATA_LOGGER_TYPE_E ulType = 1;
+    optional STREAM_DATA_LOGGER_WORKING_MODE_E ulMode = 2;
+    repeated stream_logger_config_data astLoggerConfigList = 3;
+    optional stream_logger_kafka_data astLoggerKafkaData = 4;
+    
+}

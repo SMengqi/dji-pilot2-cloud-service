@@ -1,0 +1,194 @@
+syntax = "proto2";
+package if_broadxt_zebra;
+
+message ZebraConnectReq
+{
+	optional string ul_banma_id = 1;
+	optional uint32 ul_use_acu = 2;    //absence or 0 : using zebra position, 1: using ACU positon
+	optional uint32 ul_dev_type = 3;  //absence or 0 : cheji   1:app
+	optional string str_plate_number = 4;
+}
+
+enum ZABRA_REPORT_PERIOD_E
+{
+	ZABRA_REPORT_PERIOD_RAPID = 100;
+	ZABRA_REPORT_PERIOD_MEDIUM = 200;
+	ZABRA_REPORT_PERIOD_LOW = 300;
+}
+
+enum CONNECT_RSP_RLT_E
+{
+	CONNECT_RSP_RLT_NORMAL_VT = 1;
+	CONNECT_RSP_RLT_EMG_VT = 2;
+	CONNECT_RSP_RLT_PRIVILEGE_VT = 3;
+	CONNECT_RSP_RLT_OTHER = 4;// fail
+}
+
+message ZebraConnectRsp
+{
+	optional uint32 ul_broadxt_id = 1;
+	optional CONNECT_RSP_RLT_E e_rsp_rlt = 2;
+	optional ZABRA_REPORT_PERIOD_E e_report_period = 3;
+}
+
+message PointUTM
+{
+    optional double dbx = 1;  //East from the origin, in meters.
+    optional double dby = 2;  //North from the origin, in meters.
+    optional double dbz = 3;  //Up from the WGS-84 ellipsoid, in meters.
+}
+
+message Vector3d {
+  optional double x = 1;  // in meters.
+  optional double y = 2;  // in meters.
+  optional double z = 3;  // in meters.
+}
+
+
+message ZebraPositionReport
+{
+	optional PointUTM st_position = 1;
+	optional Vector3d st_speed = 2;
+	optional int64 sl_lane_id = 3;
+	optional int64 sl_connection_id = 4;
+	optional int64 sl_timestamp = 5;   //ms
+}
+
+enum ObjectType {
+	UNKNOWN = 0;
+	UNKNOWN_MOVABLE = 1;
+	UNKNOWN_UNMOVABLE = 2;
+	PEDESTRIAN = 3;  // Pedestrian, usually determined by moving behaviour.
+	BICYCLE = 4;     // bike, motor bike
+	VEHICLE = 5;     // Passenger car or truck.
+	CAR = 6;         // Passenger car.
+	TRUCK = 7;       // Truck.
+	BUS = 8;
+	TRICYCLE = 9;
+	BLOCK = 10;
+	CONE_BARREL = 11;
+};
+
+
+//geo  多个uuid
+//uuid  ZebraObstcle
+//rctp 加锁  uuid  ZebraObstcle    vt处理轨迹匹配   解锁    vt 处理障碍物回复  
+
+
+message ZebraObstcle
+{
+	optional uint64 id = 1;
+    optional ObjectType eObjectType = 2;
+    
+    // utm center of the object (cx, cy, z_min)
+    optional PointUTM center = 3;
+    optional double theta = 4; //East is 0, north is π/2, south is -π/2
+    
+    // Size of obstacle bounding box.
+    optional double length = 7;  // obstacle length.
+    optional double width = 8;   // obstacle width.
+    optional double height = 9;  // obstacle height.
+    optional Vector3d speed = 10;  // obstacle speed.
+
+	optional string VehicleClass = 11; // 车辆类型	
+    optional string VehicleColor = 12; // 车辆颜色
+    optional string VehicleBrand = 13; // 车辆品牌
+    optional string VehicleModel = 14; // 车辆型号
+    optional string VehicleStyles = 15; // 车辆年款,多个可能值用英文逗号分隔。例如“2014,2015,2016”
+    optional string PlateClass = 16; // 车牌类型 
+    optional string PlateColor = 17; // 车牌颜色
+    optional string PlateNo = 18; // 车牌号码
+    optional double dra_timestamp = 19; // //dra utc time
+}
+
+message ZebraTrafficLigth
+{
+    optional PointUTM st_position = 1;
+
+    enum LIGHT_TYPE_ELIGHT_TYPE_E
+    {
+        LIGHT_TYPE_UNKNOWN_TYPE = 0;
+        LIGHT_TYPE_CYCLE = 1;
+        LIGHT_TYPE_LEFT = 2;
+        LIGHT_TYPE_STRAIGHT = 3;
+        LIGHT_TYPE_RIGHT = 4;
+        LIGHT_TYPE_TURN = 5;
+        LIGHT_TYPE_TURNLEFT = 6;
+        LIGHT_TYPE_STRAIGHT_LEFT = 7;
+        LIGHT_TYPE_COUNT_DOWN = 8;
+    };
+
+    enum LIGHT_COLOR_E
+    {
+        LIGHT_COLOR_UNKNOWN = 0;
+        LIGHT_COLOR_RED = 1;
+        LIGHT_COLOR_GREEN = 2;
+        LIGHT_COLOR_YELLOW = 3;
+    };
+
+    optional LIGHT_COLOR_E e_color = 2;  //LIGHT_COLOR_E
+    optional LIGHT_TYPE_ELIGHT_TYPE_E e_light_type = 3; //LIGHT_TYPE_ELIGHT_TYPE_E
+    optional uint32 ul_is_twinkle = 4; //bool
+    optional uint32 ul_countdown_time = 5;
+    optional uint32 ul_id = 6;
+}
+
+enum QUIT_EMG_CAUSE
+{
+	QUIT_EMG_CAUSE_ILLEGAL_USER = 1;
+	QUIT_EMG_CAUSE_GIVE_UP_EMG = 2;
+	ILLEGAL_OCCUPATION_OF_BUS_LANES = 3; 
+
+}
+
+message RoadInfoToZebra
+{
+	repeated ZebraObstcle ast_obstcle_list = 1;	//匹配的障碍物信息
+	repeated ZebraTrafficLigth ast_traffic_ligth = 2;	//红绿灯
+	optional Vector3d ul_recommended_speed = 3;  	//km/h 原来是绿波通行用的，后来改成匹配成功后的目标障碍物速度
+	optional QUIT_EMG_CAUSE e_quit_emg_cause = 4;	//告警信息
+	optional PointUTM st_position = 5;				//匹配障碍物位置
+	optional double st_theta = 6;					//匹配障碍物theta角
+	optional uint64 id = 7;							//匹配障碍物id
+    optional double drc_timestamp = 8;//drc utc time  DRC发送消息给APP的时间戳
+	optional uint32 ul_match_flag = 9;              //APP匹配标志位 0匹配失败，使用gps信号，1车牌匹配，2轨迹匹配,3通过DRC trackid匹配
+}
+
+//车机regc向crm发周边障碍物信息
+message Regc2CrmObsInfo
+{
+	optional RoadInfoToZebra obsinfo = 1;
+	optional string strVbId = 2;
+}
+
+enum DISCONNECT_CAUSE_E
+{
+	DISCONNECT_CAUSE_BROADXT_INITIATED = 1;
+	DISCONNECT_CAUSE_ZEBRA_INITIATED = 2;
+	DISCONNECT_CAUSE_OTHER = 3;
+}
+
+message ZebraDisconnectReq
+{
+	optional DISCONNECT_CAUSE_E e_disconnect_cause = 1;
+}
+
+message BroadxtDisconnectCmd
+{
+	optional DISCONNECT_CAUSE_E e_disconnect_cause = 1;
+}
+
+message AcuStateInd
+{
+    optional PointUTM st_coordicate = 1;
+	optional int64 sl_lane_id = 2;
+	optional int64 sl_connection_id = 3;
+	optional PointUTM st_line_speed = 4;
+	optional double db_yaw = 5;
+}
+
+message EmergencyBrakeWarning
+{
+    optional uint32 ul_distance = 1;  //the distance of emergency brake vehicle
+}
+

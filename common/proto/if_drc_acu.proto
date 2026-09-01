@@ -1,0 +1,335 @@
+syntax = "proto2";
+package if_drc_acu;
+
+import "bxt.common.math.Vector3d.proto";
+import "bxt.obstacle_v2.proto";
+import "bxt.common.Header.proto";
+import "if_proto_common.proto";
+import "control_command.proto";
+import "chassis.proto";
+
+message acu_connect_req
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_number_plate = 2;
+    optional string str_engine_number = 3;
+    optional string str_sw_version = 4;
+}
+
+
+//msg type 28(FUNCTION_DISABLE),interval is 100ms，飞步的采集周期，bus info和bus ctrl用一个周期，用e_info_rpt_interval
+message acu_connect_rsp
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_number_plate = 2;
+    optional string str_engine_number = 3;
+    enum CONNECT_RETURN_CODE_E
+    {
+        CONNECT_OK = 0;
+        CONNECT_ILLEGAL_USER = 1;
+        CONNECT_ERR_OTHER = 2;
+    }
+    optional CONNECT_RETURN_CODE_E e_rsp_code = 4;         
+    optional uint32 e_state_rpt_interval = 5;  //default 100(ms)
+    optional uint32 e_alarm_rpt_interval = 6;  //default 10(s)
+    optional uint32 e_info_rpt_interval = 7;   //default 100(ms) for bus info and bus ctrl
+}
+
+message acu_config_req
+{
+    optional uint32 ul_global_id = 1;
+    optional uint32 e_state_rpt_interval = 2;  
+    optional uint32 e_alarm_rpt_interval = 3;  
+    optional uint32 e_info_rpt_interval = 4;  
+    enum OBSTACLE_RPT_SWITCH_E
+    {
+        OBSTACLE_RPT_SWITCH_ON = 0;
+        OBSTACLE_RPT_SWITCH_OFF = 1;
+    }
+    optional OBSTACLE_RPT_SWITCH_E e_obs_rpt_switch = 5;
+    optional uint32 e_obstacle_rpt_interval = 6;  
+    optional uint32 ul_transaction_id = 7;
+    optional bool bl_video_switch = 8;
+}
+
+message acu_config_cfm
+{
+    optional uint32 ul_global_id = 1;
+    enum CFG_CFM_RLT_E
+    {
+        CFG_CFM_RLT_OK = 0;
+        CFG_CFM_RLT_PARA_ERR = 1;
+        CFG_CFM_RLT_OTHER = 2;
+    }
+    optional CFG_CFM_RLT_E e_return_code = 2;
+    optional uint32 ul_transaction_id = 3;
+}
+
+message acu_disconnect_req
+{
+    optional uint32 ul_global_id = 1;
+}
+
+message acu_disconnect_rsp
+{
+    optional uint32 ul_global_id = 1;
+    enum DISCONNECT_RETURN_CODE_E
+    {
+        DISCONNECT_OK = 0;
+        DISCONNECT_FAIL = 1;
+    }
+    optional DISCONNECT_RETURN_CODE_E e_disconnect_rsp_code = 2;
+}
+
+message acu_info_report {
+  optional uint32 ul_global_id = 1;
+  optional if_proto_common.Chassis chassis = 3;
+}
+message acu_control_report {
+  optional uint32 ul_global_id = 1;
+  optional if_proto_common.ControlCommand control_command = 2;
+}
+
+message acu_schedule_req
+{
+    optional uint32 ul_global_id = 1;
+    optional uint32 ul_line_id = 2;
+    optional uint32 ul_transaction_id = 3;
+}
+
+message acu_schedule_rsp
+{
+    optional uint32 ul_global_id = 1;
+    enum SCHEDULE_RETURN_E
+    {
+        SCHEDULE_OK = 0;
+        SCHEDULE_FAIL = 1;
+    }
+    optional SCHEDULE_RETURN_E e_schedule_rsp = 2; 
+    optional uint32 ul_transaction_id = 3;	
+}
+
+//alarm
+message alarm_info
+{
+    optional uint32 ul_mode_id = 1;
+    optional uint32 ul_alarm_num = 2;    
+    optional if_proto_common.ALARM_LEVEL_E e_alarm_level = 3;  //ALARM_LEVEL_E
+    optional string str_alarm_description = 4;
+}
+
+message acu_alarm_report
+{
+    optional uint32 ul_global_id = 1;
+    enum ALARM_TRIGER_TYPE_E
+    {
+        ALARM_TRIGER_TYPE_EVENT = 0;
+        ALARM_TRIGER_TYPE_PERIOD = 1;
+    }
+    optional ALARM_TRIGER_TYPE_E e_triger_type = 2;  //ALARM_TRIGER_TYPE_E
+    repeated alarm_info ast_alarm_info_list = 3;
+}
+
+message acu_alarm_cfm
+{
+    optional uint32 ul_global_id = 1;
+    repeated uint32 aul_alarm_num = 2;
+}
+
+message acu_alarm_clean_req
+{
+    optional uint32 ul_global_id = 1;
+    repeated uint32 aul_alarm_num = 2;
+}
+
+message acu_alarm_clean_cfm
+{
+    optional uint32 ul_global_id = 1;
+    repeated uint32 aul_alarm_num = 2;
+}
+
+//software update
+message acu_sw_update_req
+{
+    optional uint32 ul_global_id = 1;
+    optional if_proto_common.SwFtpInfo st_sw_ftp_info = 2;
+    optional uint32 ul_force_update_flag = 3;
+    optional uint32 ul_transaction_id = 4;
+}
+
+message acu_sw_update_rsp
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_sw_name = 2;
+    enum SW_UPDATE_RSP_RLT_E
+    {
+        SW_UPDATE_RSP_RLT_OK = 0;
+        SW_UPDATE_RSP_RLT_FAIL = 1;  // not need update,may be the servion is same
+    }
+    optional SW_UPDATE_RSP_RLT_E e_return_code = 3;
+    optional uint32 ul_transaction_id = 4;	
+}
+
+message acu_sw_update_ind
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_sw_name = 2;
+    enum SW_UPDATE_IND_RLT_E
+    {
+        SW_UPDATE_IND_RLT_OK = 0;
+        SW_UPDATE_IND_RLT_ADDS_ERR = 1;   //ftp addrss is error
+        SW_UPDATE_IND_RLT_GET_ERR = 2;    //getting file error
+    }
+    optional SW_UPDATE_IND_RLT_E e_return_code = 3;
+    optional uint32 ul_transaction_id = 4;
+}
+
+//map update
+message acu_map_update_req
+{
+    optional uint32 ul_global_id = 1;
+    optional if_proto_common.SwFtpInfo st_sw_ftp_info = 2;
+    optional uint32 ul_transaction_id = 3;
+}
+
+message acu_map_update_rsp
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_map_name = 2;
+    enum MAP_UPDATE_RSP_E
+    {
+        MAP_UPDATE_RSP_OK = 0;         //ok
+        MAP_UPDATE_RSP_FAIL = 1;       //Disagree with the upgrade
+    }
+    optional MAP_UPDATE_RSP_E e_return_code = 3; 
+    optional uint32 ul_transaction_id = 4;
+}
+
+message acu_map_update_ind
+{
+    optional uint32 ul_global_id = 1;
+    optional string str_map_name = 2;
+    enum MAP_UPDATE_IND_E
+    {
+        MAP_UPDATE_IND_OK = 0;     
+        MAP_UPDATE_IND_ADDS_ERR = 1;    //the ftp addrsss is error
+        MAP_UPDATE_IND_GET_ERR = 2;     //getting files error
+    }
+    optional MAP_UPDATE_IND_E e_return_code = 3; 
+    optional uint32 ul_transaction_id = 4;
+}
+
+// Turn indication
+enum TurnMode 
+{
+    STRAIGHT = 1;
+    TURN_LEFT = 2;
+    TURN_RIGHT = 3;
+}
+
+// Steer mode in decision
+enum SteerMode {
+    KEEP_LANE = 1;
+    CHANGE_LEFT = 2;
+    CHANGE_RIGHT = 3;
+    LANE_APPROACH_LEFT = 4;
+    LANE_APPROACH_RIGHT = 5;
+}
+
+// Drive mode in decision
+enum DriveMode {
+    NORMAL = 1;
+    PARKING = 2;
+    EMERGENCY = 3;
+    IDLE = 4;
+}
+
+// One point in the trajectory
+message TrajectoryPoint {
+    // absolute time stamp
+    optional double timestamp = 1;
+    // (x,y,theta): the coordinate in UTM system
+    optional double x = 2;
+    optional double y = 3;
+    optional double yaw = 4;
+    // curvature
+    optional double kappa = 5;
+    // length along the path
+    optional double s = 6;
+    // velocity
+    optional double v = 7;
+    // acceleration
+    optional double a = 8;
+    // offset to lane center
+    optional double d = 9;
+    // point left limitation, should be a nonnegative value
+    optional double left_d_limit = 10;
+    // point right limitation, should be a nonpositive value
+    optional double right_d_limit = 11;
+    // velocity lower boundary, should be a nonnegative value which represents
+    // absolute variation
+    optional double speed_tolerance_low = 12;
+    // velocity upper boundary, should be a nonnegative value which represents
+    // absolute variation
+    optional double speed_tolerance_high = 13;
+}
+
+// The planned trajectory
+message PlanningTrajectory {
+    optional if_proto_common.Header header = 1;
+    // total length of the trajectory
+    optional double total_length = 2;
+    // total time of the trajectory
+    optional double total_time = 3;
+    // a series of points on the trajectory
+    repeated TrajectoryPoint trajectory_point = 4;
+    // a series of extended points on the trajectory
+    repeated TrajectoryPoint extended_trajectory_point = 8;
+    // turn indication
+    optional TurnMode turn_mode = 5;
+    // drive mode in decision
+    optional DriveMode drive_mode = 6;
+    // steer mode in decision
+    optional SteerMode steer_mode = 7;
+    // speed tolerance low
+    optional double speed_tolerance_low = 9;
+    // speed tolerance high
+    optional double speed_tolerance_high = 10;
+    // distance to end point
+    optional double stop_dist = 11;
+}
+
+message acu_state_report
+{
+    optional uint32 ul_global_id = 1;
+    optional if_proto_common.PointUTM st_coordicate = 2;
+    optional if_proto_common.Vector3d st_line_speed = 3;
+    optional if_proto_common.Vector3d st_acceleration = 11;
+    optional if_proto_common.Vector3d st_angular_speed = 4;
+    optional PlanningTrajectory st_trajectory = 5;
+    optional double db_time_stamp = 6;
+    optional double db_yaw = 7;
+    optional double db_pitch = 8;
+    optional double db_roll = 9;
+    optional uint32 sequence_num = 10;
+	optional int64 sl_lane_id = 12;
+	optional int64 sl_connection_id = 13;
+
+    optional double db_longitude = 14;			
+	optional double db_latitude = 15;
+}
+
+message data_between_acu_drc
+{
+    optional uint32 ul_global_id = 1;
+    optional if_proto_common.AREA_TYPE_E e_area_type = 2; // AREA_TYPE_E
+    optional if_proto_common.Header st_header = 3;
+    repeated if_proto_common.trafficLight ast_traffic_light = 4;
+    repeated if_proto_common.Obstacle ast_obstacle = 5;
+}
+
+message acu_video_data
+{
+	optional uint32 ul_global_id = 1;
+	optional string bt_base64_picture = 2;
+}

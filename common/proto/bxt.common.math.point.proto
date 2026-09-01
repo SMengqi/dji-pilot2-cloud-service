@@ -1,0 +1,9 @@
+syntax = "proto2";
+package if_proto_common;
+
+
+message PointGPS {
+  optional int32 lat = 1;//定义纬度数值，北纬为正，南纬为负。分辨率1e-7°，数值900000001 表示未知或无效
+  optional int32 lon = 2;//定义经度数值。东经为正，西经为负。分辨率为1e-7°， 数值1800000001 为未知或无效。
+  optional int32 ele = 3;//定义海拔高程。分辨率为0.1 米，取值范围-4096 到61439，数值-4096 表示无效数值
+}

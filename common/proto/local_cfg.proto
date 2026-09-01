@@ -1,0 +1,10 @@
+syntax = "proto3";
+package local_config;
+
+message local_base_data
+{
+    string post_url = 1;
+    bool comm_send_switch = 2;
+    string appKey = 3;
+    string appSecret = 4;
+}

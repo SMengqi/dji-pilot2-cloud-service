@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+message pbPointUTM
+{
+    optional double dbx = 1;  //East from the origin, in meters.
+    optional double dby = 2;  //North from the origin, in meters.
+    optional double dbz = 3;  //Up from the WGS-84 ellipsoid, in meters.
+}

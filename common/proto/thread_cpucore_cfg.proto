@@ -1,0 +1,15 @@
+syntax = "proto2";
+package thread_cpucore_cfg;
+
+message config_data
+{
+    optional string aucModuleName = 1;
+    optional uint32 ulCpucoreMask0 = 2;
+    optional uint32 ulCpucoreMask1 = 3;	
+    optional uint32 ulCpucoreMask2 = 4;
+    optional uint32 ulCpucoreMask3 = 5;
+}
+message config_list
+{
+    repeated config_data astCpucpreMaskList = 1;
+}

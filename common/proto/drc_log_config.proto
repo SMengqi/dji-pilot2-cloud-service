@@ -1,0 +1,87 @@
+syntax = "proto2";
+
+package drc_log;
+
+message PretLogLevel
+{
+	optional uint32 ulPretOam = 1;
+	optional uint32 ulPretMc = 2;
+	optional uint32 ulPretNets = 3;
+	optional uint32 ulDrcPretX = 4;
+	optional uint32 ulDrcTimer = 5;
+	optional uint32 ulDrcPlatformEX = 6;	
+	optional uint32 ulDrcNetWork = 7;
+	optional uint32 ulDrcComm = 8;
+};
+
+message RctpLogLevel
+{
+	optional uint32 ulRctpMc = 1;
+	optional uint32 ulRctpRecm = 2;
+	optional uint32 ulRctpRegc = 3;
+	optional uint32 ulRctpRdpm = 4;
+	optional uint32 ulDrcRctpX = 5;
+	optional uint32 ulDrcTimer = 6;
+	optional uint32 ulDrcPlatformEX = 7;	
+	optional uint32 ulDrcNetWork = 8;
+	optional uint32 ulDrcComm = 9;
+};
+
+message RcerLogLevel
+{
+	optional uint32 ulRcerMc = 1;
+	optional uint32 ulRcerOam = 2;
+	optional uint32 ulDrcRcer = 3;
+	optional uint32 ulDrcTimer = 4;
+	optional uint32 ulDrcPlatformEX = 5;	
+	optional uint32 ulDrcNetWork = 6;
+	optional uint32 ulDrcComm = 7;
+};
+
+
+message VtsmLogLevel
+{
+	optional uint32 ulVtsmMc = 1;
+	optional uint32 ulVtsmRecm = 2;
+	optional uint32 ulVtsmRegc = 3;
+	optional uint32 ulDrcVtsm = 4;
+	optional uint32 ulDrcTimer = 5;
+	optional uint32 ulDrcPlatformEX = 6;	
+	optional uint32 ulDrcNetWork = 7;
+	optional uint32 ulDrcComm = 8;
+};
+
+
+message EhmsLogLevel
+{
+	optional uint32 ulEhmsMc = 1;
+	optional uint32 ulEhmsRecm = 2;
+	optional uint32 ulEhmsRegc = 3;
+	optional uint32 ulDrcEhmsJam = 4;
+	optional uint32 ulDrcEhmsPed = 5;
+	optional uint32 ulDrcEhmsApk = 6;
+	optional uint32 ulDrcTimer = 7;
+	optional uint32 ulDrcPlatformEX = 8;	
+	optional uint32 ulDrcNetWork = 9;
+	optional uint32 ulDrcComm = 10;
+	optional uint32 ulDrcEhmsNclc = 11;
+	optional uint32 ulDrcEhmsTj = 12;
+	optional uint32 ulDrcEhmsTci = 13;
+    optional uint32 ulDrcCommon = 14;
+	optional uint32 ulDrcEhmsSlc = 15;
+	optional uint32 ulDrcEhmsOsl = 16;
+	optional uint32 ulDrcEhmsSqed = 17;
+	optional uint32 ulDrcEhmsEtod = 18;
+};
+
+message AcupLogLevel
+{
+	optional uint32 ulAcupMc = 1;
+	optional uint32 ulAcupOam = 2;
+	optional uint32 ulAcupNets = 3;
+	optional uint32 ulDrcAcsmX = 4;
+	optional uint32 ulDrcTimer = 5;
+	optional uint32 ulDrcPlatformEX = 6;	
+	optional uint32 ulDrcNetWork = 7;
+	optional uint32 ulDrcComm = 8;
+};

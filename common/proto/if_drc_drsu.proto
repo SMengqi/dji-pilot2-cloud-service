@@ -1,0 +1,505 @@
+syntax = "proto2";
+package if_drc_drsu;
+
+import "bxt.obstacle_v2.proto";
+import "bxt.common.Header.proto";
+import "if_proto_common.proto";
+import "bxt.common.math.Vector3d.proto";
+//import "bxt.events.proto";
+
+
+
+message DRSU_DRC_REG_REQ
+{
+    repeated uint32 aucDrsuMacAddr = 1;
+    optional string aucMapVersionNo = 2;
+    optional string aucSoftwareVersionNo = 3;
+    optional string aucProtocolVersion = 4;
+    optional if_proto_common.PointUTM stCoordinate = 5;
+    optional if_proto_common.DRSU_REG_TYPE_E ulRegType = 6;
+    optional if_proto_common.DRSU_SCHEME_TYPE ulDrsuSchemeType = 7 [default = SCHEME_FABU];
+}
+
+message DRC_DRSU_REG_RSP
+{
+    optional uint32 ulResult = 1; 
+    optional uint32 ulDelayRegTimer = 2; //minute	
+}
+
+enum DRSU_LOG_REPORT_FLAG_E
+{
+    DRSU_LOG_REPORT_OFF  = 0;      
+    DRSU_LOG_REPORT_ON  = 1;   
+}
+
+message DRSU_LOG_REPORT_STRU
+{
+    optional if_proto_common.DEV_FUNC_SWITCH_E ulLogOnOffFlag = 1;
+    optional uint32 ulLogPeriodOfReport = 2;
+    optional string aucStartUpdateDate = 3;
+    optional string aucStartUpdateTime = 4;
+    optional uint32 ulDevUploadOffset = 5;
+    optional if_proto_common.LogFtpInfo stLogFtpInfo = 6;
+}
+
+message DRSU_TMPRT_THRESHLOD
+{
+    optional uint32 ulDrsuUpTemp = 1;
+    optional uint32 ulDrsuDownTemp = 2;	
+}
+message DRC_DRSU_CFG_REQ
+{
+    optional uint32 ulMapUptFlag = 1;
+    optional uint32 ulPeriodOfDataRpt = 2;
+    optional if_proto_common.DRSU_ALARM_REPORT_PERIOD_E ulPeriodOfAlarmRpt = 3;
+    optional if_proto_common.DRSU_NET_TIME_STRU stCycleStartTime = 4; // HH-mm
+    optional if_proto_common.DRSU_NET_TIME_STRU stCycleEndTime = 5;
+    optional DRSU_TMPRT_THRESHLOD stDrsuTmprtThreshlod = 6; 
+    optional uint32 ulOpenBoxAlarmDisableTime = 7; //0-480
+    optional DRSU_LOG_REPORT_STRU stLogReportCfg = 8;
+    optional if_proto_common.DRSU_AI_CFG_STRU stAiCfg = 9;
+}
+
+message DRSU_DRC_CFG_RSP
+{
+    optional uint32 ulResult = 1;
+    repeated if_proto_common.DEVICE_INFO_STRU astDeviceList =2;
+}
+
+message DRC_DRSU_DATA_SYNC_REQ
+{
+    optional double dbDataTriggerTime = 1;
+}
+
+message DRSU_DRC_DATA_SYNC_RSP
+{
+    optional uint32 ulResult = 1;
+}
+
+message DRC_DRSU_SOFTWARE_UPDATE_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.DRSU_FORCCE_UPDATE_TYPE_E ulForceUptFlag = 2;   
+    optional if_proto_common.SwFtpInfo stFtpAddress = 3;
+}
+
+message DRSU_DRC_SOFTWARE_UPDATE_CFM
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+    optional string aucVersionNo = 3; 
+}
+
+message DRSU_DRC_SOFTWARE_UPDATE_IND
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+    optional string aucVersionNo = 3; 
+}
+
+message DRSU_DRC_DEVICE_STATUS_REPORT
+{
+    optional if_proto_common.DEVICE_STATUS_STRU stDeviceStatus = 1;
+}
+
+message DRC_DRSU_DEVICE_STATUS_REPORT_RSP
+{
+    optional uint32 ulResult = 1; 
+}
+
+message DRSU_DRC_ALL_DEVICE_STATUS_REPORT
+{
+    repeated if_proto_common.DEVICE_STATUS_STRU stDeviceStatus = 1;
+}
+
+message DRC_DRSU_ALL_DEVICE_STATUS_REPORT_RSP
+{
+    optional uint32 ulResult = 1; 
+}
+
+message DRC_DRSU_ALARM_RPT_PERIOD_CFG_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.DRSU_ALARM_REPORT_PERIOD_E ulPeriodOfAlarmRpt = 2;
+}
+
+message DRSU_DRC_ALARM_RPT_PERIOD_CFG_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;  
+}
+
+
+message DRC_DRSU_RESTART_IND
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.DRSU_POWER_CTRL_TYPE_E ulDrsuCtrl = 2; 
+}
+message DRC_DRSU_DEVICE_POWEROFF_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulDeviceID = 2;
+}
+message DRSU_DRC_DEVICE_POWEROFF_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;  
+}
+
+message DRC_DRSU_DEVICE_POWERON_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulDeviceID = 2;
+}
+message DRSU_DRC_DEVICE_POWERON_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;  
+}
+
+message DRC_DRSU_ALL_SENSOR_POWEROFF_REQ
+{
+    optional uint32 ulTransId = 1;  
+}
+
+message DEVICE_POWER_RESULT_STRU
+{
+    optional uint32 ulDeviceId = 1;
+    optional uint32 ulResult = 2; 
+}
+
+message DRSU_DRC_ALL_SENSOR_POWEROFF_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;  
+    repeated if_proto_common.DevFailInfo stSensorPowerResult = 3;
+}
+
+message DRC_DRSU_ALL_SENSOR_POWERON_REQ
+{
+    optional uint32 ulTransId = 1;  
+}
+message DRSU_DRC_ALL_SENSOR_POWERON_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;  
+    repeated if_proto_common.DevFailInfo stSensorPowerResult = 3;
+}
+
+message DRC_DRSU_FANS_TMPRT_CFG_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulFansMaxTmprt = 2; 
+    optional uint32 ulFansMinTmprt = 3;
+}
+
+message DRSU_DRC_FANS_TMPRT_CFG_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_EQUIP_BOX_OPEN_ALARM_DISABLE_TIME_CFG_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulMinuteLater = 2;  //0-480m
+}
+
+message DRSU_DRC_EQUIP_BOX_OPEN_ALARM_DISABLE_TIME_CFG_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRSU_DRC_EQUIP_BOX_TMPRT_REPORT_IND
+{
+    optional sint32 slEquipBoxInnerTmprt = 1; //-30~100
+    optional sint32 slEquipBoxOuterTmprt = 2; //-30~100
+}
+
+message DRC_DRSU_WORK_TIME_CFG_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.DRSU_NET_TIME_STRU stCycleStartTime = 2;
+    optional if_proto_common.DRSU_NET_TIME_STRU stCycleEndTime = 3;
+}
+message DRSU_DRC_WORK_TIME_CFG_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_TRAFFIC_WARNING_EVENT_START_REQ
+{
+    optional uint32 ulTrafficEventID = 1;
+    optional if_proto_common.EVENT_TPYE_E ulTrafficEventType = 2;
+    optional if_proto_common.Vector3I stTrafficEventHead = 3;
+    optional if_proto_common.Vector3I stTrafficEventEnd = 4;
+    optional uint32 ulDrsuSysID = 5;
+}
+
+message DRSU_DRC_TRAFFIC_WARNING_EVENT_START_RSP
+{
+    optional uint32 ulTrafficEventID = 1;
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_TRAFFIC_WARNING_EVENT_UPDATE_REQ
+{
+    optional uint32 ulTrafficEventID = 1;
+    optional if_proto_common.EVENT_TPYE_E ulTrafficEventType = 2;
+    optional if_proto_common.Vector3I stTrafficEventHead = 3;
+    optional if_proto_common.Vector3I stTrafficEventEnd = 4;
+    optional uint32 ulDrsuSysID = 5;
+}
+
+message DRSU_DRC_TRAFFIC_WARNING_EVENT_UPDATE_RSP
+{
+    optional uint32 ulTrafficEventID = 1;
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_TRAFFIC_WARNING_EVENT_END_REQ
+{
+    optional uint32 ulTrafficEventID = 1;
+}
+
+message DRSU_DRC_TRAFFIC_WARNING_EVENT_END_RSP
+{
+    optional uint32 ulTrafficEventID = 1;
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_START_VIDEO_PREVIEW_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulTrafficEventID = 2;
+    optional string aucVideoServerIP = 3;
+    optional uint32 ulVideoServerPort = 4;
+    optional if_proto_common.DRSU_VIDEO_DEFINITION_TYPE_E ulVideoDefinitionType = 5;
+}
+
+message DRSU_DRC_START_VIDEO_PREVIEW_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_IDLE_START_VIDEO_PREVIEW_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional string aucVideoServerIP = 2;
+    optional uint32 ulVideoServerPort = 3;
+    optional if_proto_common.DRSU_VIDEO_DEFINITION_TYPE_E ulVideoDefinitionType = 4;
+}
+
+message DRSU_DRC_IDLE_START_VIDEO_PREVIEW_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2;
+}
+
+message DRC_DRSU_STOP_VIDEO_PREVIEW_REQ
+{
+    optional uint32 ulTransId = 1;  
+}
+message DRSU_DRC_STOP_VIDEO_PREVIEW_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_MODIFY_DRSU_VIDEO_DEFINITION_REQ
+{
+    optional uint32 ulTransId = 1;
+    optional if_proto_common.DRSU_VIDEO_DEFINITION_TYPE_E ulVideoDefinitionType = 2; // DRSU_VIDEO_DEFINITION_TYPE_E
+}
+
+message DRSU_DRC_MODIFY_DRSU_VIDEO_DEFINITION_RSP
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulResult = 2;
+}
+message DRC_DRSU_VIDEO_REPORT_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional string aucVideoServerIP = 2;
+    optional uint32 ulVideoServerPort = 3;
+    optional if_proto_common.DRSU_NET_DATE_STRU stStartDate = 4;
+    optional if_proto_common.DRSU_NET_TIME_STRU stStartTime = 5;
+    optional if_proto_common.DRSU_NET_DATE_STRU stEndDate = 6;
+    optional if_proto_common.DRSU_NET_TIME_STRU stEndTime = 7;
+}
+message DRSU_DRC_VIDEO_REPORT_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_VIDEO_PTZ_CTRL_REQ
+{
+   optional uint32 ulTransId = 1;  
+   optional if_proto_common.CAMER_PTZ_CTRL_E ulControlType = 2;
+   optional uint32 ulStep = 3; //1-8,default=1
+   optional uint32 ulPreSetPoint = 4; //0-360
+   optional if_proto_common.CAMERA_POINT_COORDINATE_STRU stCoordinate = 5;
+   optional uint32 ulOpticalZoom = 6;//1-128；default=4
+}
+
+message DRSU_DRC_VIDEO_PTZ_CTRL_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+
+message DRC_DRSU_AI_CFG_REQ
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.DRSU_AI_CFG_STRU stAiCfg = 2; 
+}
+
+message DRSU_DRC_AI_CFG_RSP
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+}
+//
+
+
+message DRC_DRSU_SYNC_FRAME_CMD_MSG
+{
+    optional uint32 ulFrameTime = 1;
+    optional uint32 ulSubFrameTime = 2;
+}
+
+
+
+message DRC_DRSU_HDM_UPDATE_REQ_MSG
+{
+    optional uint32 ulTransId = 1;  
+    optional if_proto_common.SwFtpInfo stFtpAddress = 2;
+}
+
+message DRSU_DRC_HDM_UPDATE_CFM_MSG
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+    optional string aucVersionNo = 3; 
+}
+
+message DRSU_DRC_HDM_UPDATE_IND_MSG
+{
+    optional uint32 ulTransId = 1;  
+    optional uint32 ulResult = 2; 
+    optional string aucVersionNo = 3; 
+}
+
+
+message DRSU_DRC_ALARM_CRITICAL_REQ_MSG
+{
+    optional if_proto_common.AlarmInfo stAlarmInfo = 1;
+}
+
+message DRC_DRSU_ALARM_CRITICAL_RSP_MSG
+{
+    optional uint32 ulResult = 1; 
+    optional uint32 ulAlarmNo = 2; 
+}
+
+message DRSU_DRC_ALARM_NORMAL_IND_MSG
+{
+    repeated if_proto_common.AlarmInfo astAlarmInfo = 1;
+}
+
+message DRSU_DRC_ALARM_CLEAR_IND_MSG
+{
+    repeated if_proto_common.AlarmSimpleInfo astAlarmSimpleInfo = 1;
+}
+
+message DRC_DRSU_ALARM_CLEAR_CFM_MSG
+{
+    optional uint32 ulResult = 1; 
+    repeated if_proto_common.AlarmSimpleInfo astAlarmSimpleInfo = 2;
+}
+
+
+message DRSU_DRC_DATA_INFO_IND_MSG
+{
+    optional uint32 ulFrameTimer = 1; 
+    optional uint32 ulSubFrameTimer = 2; 
+    optional if_proto_common.Header stHeader = 3;
+    repeated if_proto_common.trafficLight astTrafficLight = 4;
+    repeated if_proto_common.Obstacle astObstacle = 5;
+    repeated if_proto_common.RoadSurface stRoadSurface = 6;
+    optional uint64 ulFrameCount = 7;
+//    repeated if_proto_common.Events events = 8; 
+    optional uint32 subNodeID = 9; //数据来源的子节点(点位)号; its800使用
+    optional uint64 llCreateTime = 10;  //drc接收kfk时间戳，只有drc在用
+}
+
+
+message DRC_DRSU_LOGUPLOAD_CFG_REQ_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional if_proto_common.LogFtpInfo stLogFtpInfo = 2;
+    optional uint32 ulTimeCycle = 3;  //day
+    optional string strTartDate = 4;  //YYYYMMDD
+    optional string strTime = 5;      //HHmmss
+    optional uint32 ulDevUploadOffset = 6;
+}
+
+message DRSU_DRC_LOGUPLOAD_CFG_RSP_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulResult = 2;  //0 :sucess
+}
+
+message DRC_DRSU_LOGSWICH_CFG_REQ_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional if_proto_common.DEV_FUNC_SWITCH_E eLogOnOffFlag = 2;
+}
+
+message DRSU_DRC_LOGSWITCH_CFG_RSP_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulResult = 2;
+}
+
+message DRSU_DRC_LOG_FILE_RECORDINFO_IND_MSG
+{
+    optional string strStartTime = 1;
+    optional string strEndTime = 2;
+    optional string strLogFileName = 3;   //log name:GLOBAL ID_event_ YYYYMMDDHHmm.log;GLOBAL ID_event_ YYYYMMDDHHmm.log
+    optional if_proto_common.LOG_FILE_TYPE eFileType = 4;
+    optional string strFilePath = 5;    //file path where the log updated
+}
+
+
+//DRSU LOG LEVEL CFG
+message DRC_DRSU_LOGLEVEL_CFG_REQ_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulIsValidForLongTermFlag = 3;
+    optional if_proto_common.DrsuLogLevelInfo stDrsuLogLevelInfo = 4;
+};
+
+message DRSU_DRC_LOGLEVEL_CFG_RSP_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulResult = 2;
+};
+
+message DRC_DRSU_LOGLEVEL_QUERY_REQ_MSG
+{
+    optional uint32 ulTransId = 1;
+};
+
+message DRSU_DRC_LOGLEVEL_QUERY_RSP_MSG
+{
+    optional uint32 ulTransId = 1;
+    optional if_proto_common.DrsuLogLevelInfo stDrsuLogLevelInfo = 2;
+};
+
+
+

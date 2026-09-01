@@ -1,0 +1,32 @@
+syntax = "proto2";
+package trafficLight;
+
+enum LAMP_STATUS_E
+{
+    LIGHTS_OFF = 11; //灭灯
+    LIGHTS_RED = 21;
+    LIGHTS_YELLOW = 22;
+    LIGHTS_GREEN = 23;
+    LIGHTS_REDYELLOW = 31;
+	LIGHTS_WAITING = 41; //待行
+};
+
+message LampGroup {
+    required uint32 lampGroupIndex = 1; //灯组index    
+	required LAMP_STATUS_E lampStatus = 2;  //LAMP_STATUS_E
+};
+
+message TrafficLight
+{
+    required uint32 trafficLightID = 1; //信号灯ID,一个方向的灯，全局唯一
+	repeated LampGroup lampGroup = 2;
+};
+
+message CrossTrafficLight
+{
+	required uint32 crossID = 1;
+	repeated TrafficLight trafficLight = 2;
+    required int64 timeStamp = 3;
+    optional int64 draRecvTime = 4;
+    required int64 draSendTime = 5;
+};

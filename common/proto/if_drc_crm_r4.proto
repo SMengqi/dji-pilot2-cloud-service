@@ -1,0 +1,346 @@
+syntax = "proto2";
+package if_drc_crm;
+
+import "bxt.obstacle_v2.proto";
+import "bxt.common.Header.proto";
+import "if_drc_acu.proto";
+import "bxt.common.math.Vector3d.proto";
+import "if_proto_common.proto";
+import "bxt.common.math.point.proto";
+import "if_broadxt_zebra.proto";
+
+//DRC与CRM统一事件接口 
+message VehicleObj
+{
+    optional uint64 objID = 1;
+    optional if_proto_common.ObjectType objType = 2;
+    optional string VehicleClass = 14; // Vehicle type
+    optional int32 objSpeed = 3;
+    optional string vehicleColor = 4;       //车颜色
+    optional string plateType = 5;          //车牌类型
+    optional string plateColor = 6;         //车牌颜色
+    optional string plateNum = 7;           //车牌数字
+    optional uint32 ulTrackId = 8;          //弃用，没有直接删除是怕版本不兼容
+    repeated uint32 aulTrackId = 9;         //事件所在点位下的障碍物 track id list，第一个track id是刚进入点位的track id
+    optional int64 entry_time = 10;          //障碍物进入事件发生点位的时间
+    optional UtmLoc utmLocs = 11;	        //进入点位的初始UTM坐标
+    optional string targetCameraIP = 12;  //目标对应的相机IP, 仅路段使用, 路口不需要也无法提供 
+    optional int32 SpecialVehicleType = 13; //特殊车辆的类型
+};
+
+message ObjSize
+{
+    optional int32 objLength = 1;           //长 cm
+    optional int32 objWidth = 2;            //宽 cm
+    optional int32 objHeight = 3;           //高 cm
+};
+
+message GpsLoc
+{
+    optional int32 lng = 1;                 //经度 东经为正，西经为负。分辨率为1e-7°， 数值1800000001 为未知或无效。
+    optional int32 lat = 2;                 //纬度 北纬为正，南纬为负。分辨率1e-7°，数值900000001 表示未知或无效
+};
+
+message PileLoc
+{
+    optional string number = 1;             //桩号
+    optional int32 distance = 2;            //距离 m
+};
+
+message UtmLoc
+{
+    optional int64 utmX = 1;
+    optional int64 utmY = 2;
+    optional int64 utmZ = 3;
+};
+
+message ExtParam
+{
+    repeated VehicleObj vehicleObjs = 1;    //车辆障碍物对象数组
+    optional ObjSize objSize = 2;           //抛撒物事件特有
+    optional int32 avgV = 3;                //拥堵,低速,超低速事件专有，平均车速 m/s
+    optional uint32 ul_person_number = 4;   //行人数量，只用在占道施工，事故，异常停车事件中
+    repeated UtmLoc fence = 5;              //事件的影响范围，用于占道施工，事故
+};
+
+
+enum LANE_TYPE_E
+{
+    LANE_VEHICLE = 0;  //机动车道
+    LANE_BICYCLE = 1;  //非机动车道
+    LANE_EMERGENCY = 2;//应急车道
+    LANE_RAMP = 3;     //匝道
+    LANE_BUS = 4;      //公交车道
+}
+
+message LaneInfo
+{
+    optional int32 laneID = 1;         //车道号
+    optional LANE_TYPE_E laneType = 2; //车道类型
+};
+
+message event_relation_info
+{
+    optional uint32 relation = 1;   // 1：合并，
+    optional uint64 related_eventID = 2;  //如果是事件合并，此id代表解除事件被合并的目标事件的id
+};
+
+message change_line_info
+{
+    optional int32 from_line = 1;
+    optional int32 to_line = 2;
+};
+
+message DRC_CRM_EVENT_IND 
+{
+    optional uint64 eventID = 1;             //事件ID 编号，同一个事件的新增、修改、解除使用同一个
+    repeated int32 nodeID = 2;              //监测出事件的节点ID,在飞步方案中为DRSUID，在ITS800方案为ITS800点位ID,对拥堵事件/道路维修事件可以为列表
+    repeated int32 subNodeID = 3;           //飞步方案：为可调用视频的DRSUID  ITS800方案：希望是点位下具体相机ID
+    optional if_proto_common.EVENT_TPYE_E eventType = 4;           //事件类型
+    optional int32 eventState = 5;          //0:新增；1:修改；2:解除  解除状态，只需要eventID
+    optional event_relation_info event_relation = 24;  //目前用来表示事件解除的原因，如果此参数没有，代表事件本身解除，和别的事件没有关系
+    repeated GpsLoc gpsLocs = 6;            //位置信息 
+    repeated PileLoc pileLocs = 7;          //里程桩信息
+    repeated UtmLoc utmLocs = 8;            //UTM
+    optional string roadName = 9;           //道路名称
+    optional string direction = 10;         //方向： CRM不再展示城市道路的道路方向，DRC报的是上下行，对城市道路来说意义不大，不再纠结这个字段了
+    repeated int32 laneIDs = 11;            //车道号(弃用)
+    optional int32 level = 12;              //拥堵等级
+    repeated int32 hdLanes = 13;            //高精地图laneId
+    repeated int32 hdConnections = 14;      //高精地图connectionId
+    optional int32 eventRadius = 15;        //事件影响范围 单位0.1米
+    optional int32 eventConfidence = 16;    //事件置信度
+    repeated int64 judgeTimes = 17;         //事件判定时间
+    optional int64 reportTime = 18;         //DRC上报时的时间戳
+    optional ExtParam extParam = 19;        //事件参数扩展
+    optional uint32 transId = 20;           //每一条message使用的传输id
+    optional uint32 drcId = 21;             //DRC ID
+    optional uint32 forbiddenZoneId = 22;   //禁行区ID，若此字段有值则表示在禁行区，否则表示不在禁行区
+    repeated LaneInfo stLane = 23;          //车道号信息
+    optional change_line_info change_line = 25;//实线变道特有的参数：变道的详细信息
+};
+
+//DRC与CRM统一事件接口应答(新增和解除的时候会有应答) 
+message CRM_DRC_EVENT_RSP
+{
+    optional uint32 drcId = 1;
+    optional uint32 transId = 2;
+    optional uint64 eventID = 3;
+};
+
+//交通拥堵指数(Traffic congestion index)
+message TCIObj
+{
+    optional int32 nodeID = 1;              //节点ID
+    optional int32 tci = 2;                 //拥堵指数
+    optional int32 avgV = 3;                //平均速度  unit:0.02m/s
+    repeated GpsLoc locs = 4;               //WGS84坐标信息，可以包含多个，且至少包含头部和尾部坐标
+};
+
+message DRC_CRM_TCI_IND
+{
+    repeated TCIObj TciObjs = 1;
+    optional int64 reportTime = 2;
+};
+
+//全息数据上报
+message ObstacleDebugInfo
+{
+	optional uint32 ulDrsuId = 1;
+	optional uint32 ulTrackId = 2;
+	optional double dbTimestamp = 3;
+}
+
+message Obstacle2D
+{
+    optional uint64 id = 1;
+    optional if_proto_common.ObjectType eObjectType = 2;
+    
+    // utm center of the object (cx, cy, z_min)
+    optional if_proto_common.Vector3d center = 3;
+    
+    optional double drc_timestamp = 4; //drc utc time,send time
+    optional double drsu_timestamp = 5;  //drsu utc time
+    optional double drc_rcv_timestamp = 11; //drc recevie time 
+    // the yaw angle, theta = 0.0 <=> direction = (1, 0, 0)
+    optional double theta = 6;
+    
+    // Size of obstacle bounding box.
+    optional double length = 7;  // obstacle length.
+    optional double width = 8;   // obstacle width.
+    optional double height = 9;  // obstacle height.
+    optional double det_confidence = 10;
+    
+    optional int32 track_id = 30;
+    optional if_proto_common.Vector3d velocity = 31;  // obstacle velocity.
+    optional double angular_velocity = 32;
+    optional if_proto_common.Vector3d acceleration = 33;
+    optional bool is_valid = 40 [default = true];
+	
+    repeated int32 aucHdLane = 45; //-1 means road entrance, others positive means real lane id
+    repeated int32 aucHdConnection = 46; //-1 means section, others positive means real connection id
+
+    optional string VehicleClass = 60; // Vehicle type
+    optional string VehicleColor = 61; // Vehicle Color
+    optional string VehicleBrand = 62; // Vehicle Brand
+    optional string VehicleModel = 63; // Vehicle Model
+    optional string VehicleStyles = 64; // What year is the car, for example:2014,2015,2016
+    optional string PlateClass = 65; // Plate type
+    optional string PlateColor = 66; // Plate Color
+    optional string PlateNo = 67; // Plate Number
+  
+    optional int32 CarDirection = 68; // Whether to photograph the front of the car
+    optional int32 SpecialVehicleType = 69; // Special car
+	
+    repeated uint32 ulObsDrsuId = 70; 
+    repeated ObstacleDebugInfo ast_obs_debug_info = 71;
+    
+    optional uint32 ulSubNodeId = 72; //目标来自camera的ip; atals使用
+    optional int32 slHeading    = 73; //车辆航向角。为车头方向与正北方向的顺时针夹角,分辨率为0.0125°。
+    optional int32 slSpeed      = 74; //当前车速，定义车速大小，分辨率为0.01m/s
+    optional if_proto_common.PointGPS stGps     = 75; //gps 坐标
+    repeated int32 aucLane     = 76;  //来自DRSU中Obstacle中aucLane
+    optional uint32 ulForecast  = 77;   //1 表示预测状态， 0  表示正常
+	
+    optional string targetCameraIP = 80;  //目标对应的相机IP, 仅路段使用, 路口不需要也无法提供 
+    optional uint32 targetCameraDis = 81; //目标对应到相机的纵向距离, 单位m, 仅路段使用,路口不需要也无法提供
+}
+
+
+
+
+message DRC_CRM_FUSED_TRAFFIC_DATA_IND
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulDrcId = 2;
+    repeated Obstacle2D st2DObstacle = 3;
+    repeated uint32 ulDrsuId = 4;   //NodeId
+    optional double dbDrcTimeStamp = 5; //drc utc time
+}
+
+message DRC_CRM_TRAFFICLIGHT_DATA_IND
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulDrcId = 2;
+    repeated if_proto_common.trafficLight astTrafficLight = 3;
+    optional double dbDrcTimeStamp = 4; //drc utc time
+}
+
+//ACU位置上报
+enum DRIVING_MODE_E
+{
+    AUTO_DRIVING = 0;
+    MANUAL_DRIVING = 1;
+};
+
+message ACUStateInfo
+{
+    optional uint32 ulGlobalAcuId = 1;
+    optional uint32 ulIsOnLine = 2;
+    //optional DRIVING_MODE_E ulDrivingMode = 3;
+    optional if_proto_common.PointUTM stCoordinate = 4;
+    optional if_proto_common.Vector3d stLineSpeed = 5;
+    optional if_proto_common.Vector3d stAngularSpeed = 6;
+    optional if_drc_acu.PlanningTrajectory stTrajectory = 7;
+    //optional uint32 quantityOfElec = 8;
+    optional double dbYaw = 9;
+    optional double dbPitch = 10;
+    optional double dbRoll = 11;
+    optional double db_acu_raw_timestamp = 12;
+    optional if_proto_common.Vector3d stAcceleration = 13;
+    optional int64 sl_lane_id = 14;
+    optional int64 sl_connection_id = 15;
+    optional double db_drc_received_timestamp = 16;
+	
+    optional double db_longitude = 17;			
+    optional double db_latitude = 18;
+};
+
+message DRC_CRM_ACU_STATE_IND  
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulDrcId = 2;
+    repeated ACUStateInfo stACUInfoLst = 3; 
+};
+
+//融合前数据上报
+enum DEVICE_TYPE_E
+{
+    DEVICE_TRIG_INVALID = 0;
+    DEVICE_TYPE_ACU = 1;
+    DEVICE_TYPE_DRSU = 2;
+    DEVICE_TYPE_ACU_AND_DRSU = 3;
+    DEVICE_TYPE_DRC = 4;
+    DEVICE_TYPE_CRM = 5;
+};
+
+message DRC_CRM_TRAFFIC_INFO_IND 
+{
+    optional uint32 ulTransId = 1;
+    optional uint32 ulDrcId = 2;
+    optional DEVICE_TYPE_E ulDevType = 3;
+    optional uint32 ulGlobalDevId = 4;  //NodeId
+    optional if_proto_common.AREA_TYPE_E ulAreaType = 5; // AREA_TYPE_E
+    optional if_proto_common.Header stHeader = 6;
+    repeated if_proto_common.trafficLight astTrafficLight = 7;
+    repeated if_proto_common.Obstacle astObstacle = 8;
+    optional double dbDrcTimeStamp = 9;
+    optional uint64 ulFrameCount = 10;
+    optional uint32 ulSubNodeId = 11;
+}
+
+
+//智能车机轨迹
+message DRC_CRM_VT_POSITION_IND
+{
+	optional uint32 ulTransId = 1;
+	optional uint32 ulDrcId = 2;
+	optional string str_vt_id = 3;
+    optional string str_plate_number = 4;               //APP上报车牌
+    optional if_proto_common.PointUTM st_position = 5;  //APP上报位置
+    optional if_proto_common.Vector3d st_speed = 6;     //APP上报速度
+    optional int64 sl_lane_id = 7;                      //APP上报车道id
+    optional int64 sl_connection_id = 8;                //APP上报的connect id
+    optional int64 sl_timestamp = 9;   //ms             //APP上报时间戳
+}
+
+message DRC_CRM_KEY_VEHICLE_MAP_IND
+{
+	optional uint32 ulTransId = 1;   
+	optional uint32 ulDrcId = 2;
+	optional uint32 ulDevType = 3;   // device type on the vehicle, VT,ACU,OTHER
+	optional string str_vt_id = 4;   // device id
+    optional if_broadxt_zebra.RoadInfoToZebra str_pushinfo_to_app = 5;  //路况信息
+}
+
+message DRC_CRM_SIM_DATA_JAM_EVENT  //有事件才发送
+{
+    required int32     sim_id = 1;                              // 推演命令ID
+    required int32     sim_batch_num = 2;                       // 推演批次
+    optional DRC_CRM_EVENT_IND jam_event = 3;                   // 拥堵事件
+}
+
+message DRC_CRM_SIM_DATA_TCI  //周期发送
+{
+    required int32     sim_id = 1;                              // 推演命令ID
+    required int32     sim_batch_num = 2;                       // 推演批次
+    optional DRC_CRM_TCI_IND tci_info = 3;                      // TCI信息
+}
+
+//Data Filter Statistics
+message FILTER_STATISTICS_INFO
+{
+	optional uint64 ullTime = 1;
+	optional uint32 ulDrsuId = 2;
+	optional uint32 ulObsCount = 3;
+	optional uint32 ulOutsideMapFilterCount = 4;
+	optional uint32 ulPosConfidenceFilterCount = 5;
+	optional uint32 ulGeoHashFilterCount = 6;
+	optional uint32 ulSpeedFilterCount = 7;
+}
+
+message DRC_CRM_DATA_FILTER_STATISTICS_REPORT
+{
+	repeated FILTER_STATISTICS_INFO filterStatistics = 1;
+}
+

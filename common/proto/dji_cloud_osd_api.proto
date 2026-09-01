@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package dji_cloud_osd;
+
+message ThermalPayloadData {
+    string payload_index = 1;
+    double gimbal_pitch = 2;
+    double gimbal_roll = 3;
+    double gimbal_yaw = 4;
+    double measure_target_altitude = 5;
+    double measure_target_distance = 6;
+    int32 measure_target_error_state = 7;
+    double measure_target_latitude = 8;
+    double measure_target_longitude = 9;
+    int32 thermal_current_palette_style = 10;
+    int32 thermal_gain_mode = 11;
+    double thermal_global_temperature_max = 12;
+    double thermal_global_temperature_min = 13;
+    double thermal_isotherm_lower_limit = 14;
+    int32 thermal_isotherm_state = 15;
+    double thermal_isotherm_upper_limit = 16;
+    repeated int32 thermal_supported_palette_styles = 17;
+    double zoom_factor = 18;
+}
+
+message ThermalData {
+    int64 activation_time = 1;
+    double attitude_head = 2;
+    double attitude_pitch = 3;
+    double attitude_roll = 4;
+    bytes dynamic_fields = 5;  // 存储原始JSON
+}
+
+message DroneMessage {
+    string bid = 1;
+    ThermalData data = 2;
+    string tid = 3;
+    int64 timestamp = 4;
+    string gateway = 5;
+}

@@ -1,0 +1,356 @@
+syntax = "proto2";
+package if_proto_common;
+
+import "bxt.StatusPb.proto";
+import "bxt.common.math.MatrixXd.proto";
+import "bxt.common.math.Vector3d.proto";
+import "bxt.common.sensor.SensorSource.proto";
+import "bxt.common.Header.proto";
+import "bxt.common.math.point.proto";
+
+enum CameraCalibType
+{
+    CAMERA_CALIBRATION_HEAD_RIGHT = 0;
+    CAMERA_CALIBRATION_FRONT_LEFT = 1;
+    CAMERA_CALIBRATION_FRONT_RIGHT = 2;    
+    CAMERA_CALIBRATION_INVALID = 255;
+};
+
+enum ObjectType {
+    UNKNOWN = 0;
+    UNKNOWN_MOVABLE = 1;
+    UNKNOWN_UNMOVABLE = 2;
+    PEDESTRIAN = 3;  // Pedestrian, usually determined by moving behaviour.
+    BICYCLE = 4;     // bike, motor bike
+    VEHICLE = 5;     // Passenger car or truck.
+    CAR = 6;         // Passenger car.
+    TRUCK = 7;       // Truck.
+    BUS = 8;
+    TRICYCLE = 9;
+    BLOCK = 10;
+    CONE_BARREL = 11;
+    ABANDONED_BOX = 12;
+    ABANDONED_TYRE = 13;
+    TYPE_PEDESTRIAN = 21; //行人
+    TYPE_OBJECT = 22;     //目标
+    TYPE_VEHICLE = 23;    //机动车
+    TYPE_NONMOTOR = 24;   //非机动车
+    TYPE_GOODS = 25;      //物品
+    TYPE_SCENE = 26;      //场景
+};
+
+enum SpecialVehicleType {
+    NON_SPECIAL_VEHICLE = 0;   //非特殊车辆
+    SPECIAL_VEHICLE_SCHOOL_BUS = 1;   //校车
+    SPECIAL_VEHICLE_DUMP_TRUCK = 2;   //泥头车
+    SPECIAL_VEHICLE_HIGH_RISK = 3;    //高危车辆
+    SPECIAL_VEHICLE_TAXI = 4;         //出租车
+    SPECIAL_VEHICLE_OIL_TANKER = 5;   //油罐车
+    SPECIAL_VEHICLE_CRANE = 6;        //吊车
+    SPECIAL_VEHICLE_BUS = 7;          //公交车
+    SPECIAL_VEHICLE_FOUR_WHEEL_SCOOTER = 8;   //四轮代步车
+    SPECIAL_VEHICLE_AMBULANCE = 9;            //救护车
+    SPECIAL_VEHICLE_ENGINEERING_RESCUE_VEHICLE = 10;   //工程救援车
+    SPECIAL_VEHICLE_FIRE_TRUCK = 11;                   //消防车
+};
+
+enum ITS800VehicleClass {
+    ITS_VEHICLE_TYPE_NOT = 0; // 未知
+    ITS_VEHICLE_CAR = 1; // 轿车
+    ITS_VEHICLE_TRUCK = 2; // 货车
+    ITS_VEHICLE_VAN = 3; // 面包车
+    ITS_VEHICLE_PAS = 4; // 客车
+    ITS_VEHICLE_BUGGY = 5; // 小货车
+    ITS_VEHICLE_SUV = 6; // SUV
+    ITS_VEHICLE_MEDIUM_BUS = 7; // 中型客车
+    ITS_VEHICLE_SCHOOL_BUS = 8; // 校车
+    ITS_VEHICLE_HEAVY_TRUCK = 9; // 泥头车
+    ITS_VEHICLE_TANKER = 10; // 高危车
+    ITS_VEHICLE_MPV = 11; // MPV
+    ITS_VEHICLE_PICKUP = 13; // 皮卡车
+};
+
+enum ITS800NonMotorVehicleClass {
+    ITS_NONMOTOR_BICYCLE = 1;    // 自行车
+    ITS_NONMOTOR_MOTORCYCLE = 2; // 摩托车
+    ITS_NONMOTOR_TRICYCLE = 3;   // 三轮车
+    ITS_NONMOTOR_OTHER = 99; // 其他
+};
+enum ITS800VehicleColor {
+    ITS_WHITE = 0; // 白色
+    ITS_GRAY = 1; // 灰色
+    ITS_YELLOW = 2; // 黄色
+    ITS_PINK = 3; // 粉色
+    ITS_RED = 4; // 红色
+    ITS_GREEN = 5; // 绿色
+    ITS_BLUE = 6; // 蓝色
+    ITS_BROWN = 7; // 棕色
+    ITS_BLACK = 8; // 黑色
+    ITS_COLOR_NOT = 9; // 未知
+    ITS_PURPLE = 10; // 紫色
+    ITS_ORANGE = 11; // 橙色
+    ITS_SILVER = 12; // 银色
+    ITS_CYAN = 13; // 青色
+    ITS_GLODEN = 14; // 金色
+    ITS_LUCENCY = 15; // 透明
+    ITS_COLOR_OTHER = 99;
+};
+enum GAT1400VehicleColor {
+    VEHICLE_BLACK = 1;
+    VEHICLE_WHITE = 2;
+    VEHICLE_GRAY = 3;
+    VEHICLE_RED = 4;
+    VEHICLE_BLUE = 5;
+    VEHICLE_YELLOW = 6;
+    VEHICLE_ORANGE = 7;
+    VEHICLE_BROWN = 8;
+    VEHICLE_GREEN = 9;
+    VEHICLE_PINK = 12;
+    VEHICLE_PURPLE = 10;
+    VEHICLE_CYAN = 11;
+    VEHICLE_LUCENCY = 13;
+    VEHICLE_SILVER = 61;
+    VEHICLE_GLODEN = 62;
+    VEHICLE_COLOR_NOT = 98; //未知
+    VEHICLE_COLOR_OTHER = 99;
+};
+
+enum ITS800PlateColor {
+    ITS_PLATE_COLOR_UNKNOWN = 0; // 未知
+    ITS_PLATE_COLOR_BLUE = 1; // 蓝底白字
+    ITS_PLATE_COLOR_YELLOW = 2; // 黄底黑字
+    ITS_PLATE_COLOR_WHITH = 3; // 白底黑字
+    ITS_PLATE_COLOR_BLACK = 4; // 黑底白字
+    ITS_PLATE_COLOR_GREEN = 5; // 绿底白字 | 绿底黑字
+    ITS_PLATE_COLOR_GRADIENT_GREEN = 6; // 渐变绿底黑字
+    ITS_PLATE_COLOR_YELLOW_GREEN = 7; // 黄绿双拼底黑字
+    ITS_PLATE_COLOR_RED = 8; // 红色
+    ITS_PLATE_COLOR_GRAY = 9; // 灰色
+    ITS_PLATE_COLOR_ORANGE = 14; // 橘色
+    ITS_PLATE_COLOR_PURPLE = 15; // 紫色
+    ITS_PLATE_COLOR_BROWN = 16; // 棕色
+};
+enum GAT1400PlateColor {
+    PLATE_COLOR_GRAY = 3; //灰色
+    PLATE_COLOR_RED = 4; //红色
+    PLATE_COLOR_ORANGE = 7; //橙色
+    PLATE_COLOR_BROWN = 8; //棕色
+    PLATE_COLOR_PURPLE = 10; //紫色
+    PLATE_COLOR_BLUE = 61; //蓝底白字
+    PLATE_COLOR_YELLOW = 62; //黄底黑字
+    PLATE_COLOR_WHITH = 63; //白底黑字
+    PLATE_COLOR_BLACK = 64; //黑底白字
+    PLATE_COLOR_GREEN = 65; //绿底白字 | 绿底黑字
+    PLATE_COLOR_GRADIENT_GREEN = 66; //渐变绿底黑字
+    PLATE_COLOR_YELLOW_GREEN = 67; //黄绿双拼底黑字
+    PLATE_COLOR_UNKNOWN = 98; //未知
+    PLATE_COLOR_OTHER = 99; //其他
+};
+
+enum ITS800PlateClass {
+    ITS_PLATE_UNKNOWN = 0; // 未知类型
+    ITS_PLATE_ONE_BLUE = 1; // 单层蓝牌
+    ITS_PLATE_ONE_BLACK = 2; // 单层黑牌
+    ITS_PLATE_ONE_YELLOW = 3; // 单层黄牌
+    ITS_PLATE_DOUBLE_YELLOW = 4; // 双层黄牌
+    ITS_PLATE_WHITE_POLICE = 5; // 白色警牌
+    ITS_PLATE_WHITE_WJ = 6; // 白色*警
+    ITS_PLATE_INDIVI = 7; // 个性化车牌
+    ITS_PLATE_ONE_ARMY = 8; // 单层军牌
+    ITS_PLATE_DOUBLE_ARMY = 9; // 双层军牌
+    ITS_PLATE_EMBASSY = 10; // 领使馆牌
+    ITS_PLATE_HK = 11; // 粤港牌，黑底车牌
+    ITS_PLATE_AGRICULTURE = 12; // 农用车牌、拖拉机
+    ITS_PLATE_MACAU = 13; // 澳门牌
+    ITS_PLATE_CHANGNEI = 14; // 厂内牌
+    ITS_PLATE_DOUBLE_WHITE_WJ = 15; // 双层白色*警
+    ITS_PLATE_OTHER = 16; // 其他类型
+    ITS_PLATE_NEW_ENERGY = 17; // 新能源牌
+    ITS_PLATE_TEACH = 18; // 教练汽车车牌
+    ITS_PLATE_TRAILER = 19; // 挂车车牌
+    ITS_PLATE_PLANE = 20; // 民航车牌
+    ITS_PLATE_HK2 = 120; // 香港当地港牌
+};
+enum GAT1400PlateClass {
+    VEHICLE_PLATE_YELLOW = 1;       //大型汽车号牌
+    VEHICLE_PLATE_EMBASSY = 4;      //领馆汽车号牌
+    VEHICLE_PLATE_AGRICULTURE = 14; //拖拉机号牌
+    VEHICLE_PLATE_TRAILER = 15;     //挂车号牌
+    VEHICLE_PLATE_TEACH = 16;       //教练汽车号牌
+    VEHICLE_PLATE_WHITE_POLICE = 23; //警用汽车号牌
+    VEHICLE_PLATE_HK = 26;      //香港入出境号牌/港牌
+    VEHICLE_PLATE_MACAU = 27;   //澳门入出境号牌
+    VEHICLE_PLATE_WHITE_WJ = 31;    //武警号牌
+    VEHICLE_PLATE_DOUBLE_ARMY = 32; //军队号牌
+    VEHICLE_PLATE_NEW_ENERGY = 40;  //新能源牌
+    VEHICLE_PLATE_ONE_BLUE = 61;    //单层蓝牌
+    VEHICLE_PLATE_ONE_BLACK = 62;   //单层黑牌
+    VEHICLE_PLATE_INDIVI = 63;      //个性化车牌
+    VEHICLE_PLATE_CHANGNEI = 64;    //厂内牌
+    VEHICLE_PLATE_PLANE = 65;   //民航车牌
+    VEHICLE_PLATE_UNKNOWN = 98; //未知
+    VEHICLE_PLATE_OTHER = 99;   //其他号牌
+}
+
+message Point2D {
+  optional double dbx = 1;
+  optional double dby = 2;
+};
+
+message PixelPointCoordinate {
+  optional CameraCalibType ulCameraType = 1;
+  repeated Point2D astPixelPoint = 2;
+};
+// Next id is 41
+message Obstacle {
+  // ======= Detection =======
+  // obstacle ID.
+  optional int32 id = 1;
+  // GPS time in seconds.
+  optional double drsu_timestamp = 2;//AI fusion result 
+  // utm center of the object (cx, cy, z_min)
+  optional Vector3d center = 3;
+  // ego center of the object
+  optional Vector3d ego_center = 4;
+  // main direction
+  optional Vector3d direction = 5;
+  // the yaw angle, theta = 0.0 <=> direction = (1, 0, 0)
+  optional double theta = 6;
+  // Size of obstacle bounding box.
+  optional double length = 7;  // obstacle length.
+  optional double width = 8;   // obstacle width.
+  optional double height = 9;  // obstacle height.
+  optional double det_confidence = 10;
+
+  // ======= Classification =======
+  optional ObjectType obj_type = 20;  // obstacle type
+  // Probability of each type, used for track type.
+  optional double type_prob = 21;
+
+  // ======= tracking =======
+  optional int32 track_id = 30;
+  optional MatrixXd position_uncertainty = 43; // obstacle position uncertainty
+  optional Vector3d velocity = 31;  // obstacle velocity.
+  optional MatrixXd velocity_uncertainty = 38;
+  optional double angular_velocity = 32;
+  optional Vector3d acceleration = 33;
+  optional MatrixXd acceleration_uncertainty = 39;
+  // age of the tracked object
+  optional double detection_time = 34;
+  optional double tracking_time = 35;
+  optional double latest_tracked_time = 36;
+
+  // ======= Others ========
+  optional bxt.common.sensor.SensorSource sensor_source = 37 [default = UnknownSource];
+  optional bool is_valid = 40 [default = true];
+  optional bool is_on_hdmap = 41 [default = false];
+  optional bool is_stationary = 42 [default = false];
+  repeated int32 aucLane = 44;//100 means road entrance, others positive means logical lane id, 
+  
+  repeated int32 aucHdLane = 45; //-1 means road entrance, others positive means real lane id, 
+  repeated int32 aucHdConnection = 46; //-1 means section, others positive means real connection id
+  repeated int32 aulCrosswalk = 47; //-1 means section, real connection id
+  repeated PixelPointCoordinate astPixelPointCoordinate = 48; 
+
+  optional double camera_mid_timestamp = 49;//fusion from mid camera
+  optional double camera_long_timestamp = 50;//fusion from long camera
+  optional double radar_timestamp = 51; //fusion from radar 
+      
+  optional string VehicleClass = 60; // 车辆类型
+  optional string VehicleColor = 61; // 车辆颜色, atlas & its
+  optional string VehicleBrand = 62; // 车辆品牌
+  optional string VehicleModel = 63; // 车辆型号
+  optional string VehicleStyles = 64; // 车辆年款,多个可能值用英文逗号分隔。例如“2014,2015,2016”
+  optional string PlateClass = 65; // 车牌类型 atlas & its
+  optional string PlateColor = 66; // 车牌颜色,2位字符串 atlas & its
+  optional string PlateNo = 67; // 车牌号码，atlas & its
+  
+  optional int32 CarDirection = 70; // 是否拍车头、车尾
+  optional int32 SpecialVehicleType = 71; // 特殊车型
+  
+  optional uint32 dataSourceIP = 72; //目标来自camera的ip; atals使用
+  optional int32 heading    = 73; //车辆航向角。为车头方向与正北方向的顺时针夹角,分辨率为0.0125°。
+  optional int32 speed      = 74; //当前车速，定义车速大小，分辨率为0.01m/s
+  optional PointGPS gps     = 75; //gps 坐标
+  // ======= 10.1版本新增 ========
+  optional uint32 speedConfidence = 76; //速度置信度 0~100 
+  optional uint32 posConfidence =77;    //速度置信度 0~100 
+  optional string targetCameraIP = 78;  //目标对应的相机IP, 仅路段使用, 路口不需要也无法提供 
+  optional uint32 targetCameraDis = 79; //目标对应到相机的纵向距离, 单位m, 仅路段使用,路口不需要也无法提供 
+  
+  optional CameraSupplement camera_supplement = 100;
+  optional LidarSupplement lidar_supplement = 101;
+  optional RadarSupplement radar_supplement = 102;
+}
+
+message LidarSupplement {
+  // grids occupied by this obstacle.
+  repeated int32 occupied_grids = 1 [packed = true];
+}
+
+message Box2d {
+  optional double xmin = 1;
+  optional double ymin = 2;
+  optional double xmax = 3;
+  optional double ymax = 4;
+};
+
+message RadarSupplement {
+  optional bool is_background = 1 [default = false];
+}
+
+message CameraSupplement {
+  // distance from lane center (just for obstacles from camera)
+  optional double dis_from_lane_center = 1;
+
+  // distance from our vehicle (just for obstacles from camera)
+  optional double dis_from_ego = 2;
+
+  // lane id of the obstacle lied in (just for obstacles from camera)
+  optional int32 in_lane_id = 3;
+
+  // obstacle 2d bounding box in camera coordinate.
+  optional Box2d img_box = 4;
+
+  enum CameraObjectType {
+    BG = 0;
+    CAR = 1;
+    BUS = 2;
+    TRUCK = 3;
+    PERSON = 4;
+    BICYCLE = 5;
+    TRICYCLE = 6;
+    BLOCK = 7;
+    MOTOR = 8;
+  };
+  optional CameraObjectType camera_object_type = 5
+      [default = BG];  // obstacle type
+  optional double confidence = 6;
+}
+
+message SensorObstacles {
+  optional Header header = 1;
+  optional ErrorCode error_code = 2 [default = OK];
+
+  repeated Obstacle obstacles = 3;
+  // observation sensor of the obstacle
+  optional bxt.common.sensor.SensorSource sensor_source = 30 [default = UnknownSource];
+}
+
+enum ROAD_SURFACE_TYPE_E 
+{
+    NORMAL= 0;
+    WET = 1;
+    ICE = 2; 
+    FOG = 3; 
+}
+
+message RoadSurface 
+{
+    optional double dbTimestamp = 1; 
+    optional Vector3d stCenter = 2; 
+    optional double dblength = 3; 
+    optional double dbwidth = 4; 
+    optional ROAD_SURFACE_TYPE_E ulRoadSurfaceType = 5;
+    optional double dbRoadSurfaceConfidence = 6;
+}

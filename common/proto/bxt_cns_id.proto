@@ -1,0 +1,7 @@
+syntax = "proto3";
+package bxt_csn_id;
+
+message deviceids
+{
+    repeated string deviceid = 1;
+}

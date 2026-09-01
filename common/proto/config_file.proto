@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package config_file;
+
+
+message drcConfigData 
+{
+	optional uint32 ulDrcGlobalId = 1;      // DRC ID
+	optional uint32 ulThreadNum = 2;        // 工作线程数，建议初始值设置为6		
+	optional string strNacosIp = 3;         // Nacos 服务器器IP
+	optional string strNacosNameSpace = 4;  // Nacos 命名空间
+	optional string strNacosGroup = 5;      // Nacos Group 组
+	optional string strRegCenterIp = 6;     // 注册中心IP
+	optional uint32 ulRegCenterPort = 7;    // 注册中心端口IP	
+	optional string strEthName = 8;         // 网卡名称 ，用于socket
+	optional string strCrmIp = 9;			// CRM IP  
+	optional uint32 ulCrmPort = 10;			// CRM PORT 
+}
+
+
