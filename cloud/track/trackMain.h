@@ -23,9 +23,10 @@ struct Point {
  * packFlightInfo/packPayloadParam），内部平台Topic不变。
  *
  * cameras[] 已用真实抓包核实为字面量数组（非机场3早期推测的动态命名struct），结构与机场3一致，
- * 可直接沿用机场3原有的"先在cameras[]里找payload_index/zoom_factor"逻辑；gimbal_pitch/gimbal_yaw
- * 大概率也在同一个数组元素里（跟机场3"取payload_index做动态key二次查找"的写法不同），但抓包时
- * 飞行器均未挂载负载、数组内部字段无法验证，挂载负载后需重新抓包确认（见设计文档第6节待确认事项2）。
+ * 可直接沿用机场3原有的"先在cameras[]里找payload_index/zoom_factor，再用payload_index做动态
+ * key二次查找gimbal_pitch/gimbal_yaw"两段式逻辑——已用挂载负载的真实抓包核实（2026-09-02），
+ * gimbal_pitch/gimbal_yaw确认在独立的动态key对象里，不在cameras[]数组元素内部（之前"大概率
+ * 在同一个数组元素里"的推测是错的，已修正）。
  */
 class TrackMain {
 public:

@@ -93,6 +93,7 @@ bool TrackMain::parseOsdMsg(const std::string& msg)
     // gimbal_pitch/gimbal_yaw 大概率在同一个数组元素里（跟机场3"按payload_index做动态key
     // 二次查找"的写法不同），但抓包时未挂载负载无法验证，挂载负载后需重新确认（设计文档第6节）。
     const Json::Value& camera = data["cameras"];
+    bool cameraFound = false;
     if (camera.isArray() && camera.size() > 0) {
         for (Json::ArrayIndex i = 0; i < camera.size(); ++i) {
             const Json::Value& cam_info = camera[i];
@@ -100,21 +101,35 @@ bool TrackMain::parseOsdMsg(const std::string& msg)
 
             if (cam_info.isMember("payload_index")) {
                 m_flightInfo.camera.payloadIndex = cam_info["payload_index"].asString();
+                cameraFound = true;
             }
             if (cam_info.isMember("zoom_factor")) {
                 m_flightInfo.camera.zoomFactor = static_cast<float>(cam_info["zoom_factor"].asDouble());
-            }
-            if (cam_info.isMember("gimbal_pitch")) {
-                m_flightInfo.gimbal.pitch = cam_info["gimbal_pitch"].asDouble();
-            }
-            if (cam_info.isMember("gimbal_yaw")) {
-                m_flightInfo.gimbal.yaw = cam_info["gimbal_yaw"].asDouble();
             }
             // 找到第一个相机元素后退出（如需处理多负载，可修改为遍历全部）
             break;
         }
     } else {
         pl_log(WARN, "cameras 数组为空，使用默认payloadIndex: %s", m_flightInfo.camera.payloadIndex.c_str());
+    }
+
+    // ★已用挂载负载的真实抓包核实（2026-09-02）：gimbal_pitch/gimbal_yaw不在cameras[]数组元素
+    // 内部，而是在一个以payload_index命名的独立顶层动态key对象里，跟机场3原有的两段式查找逻辑
+    // 完全一致——之前"大概率在同一个数组元素里"的推测是错的，已修正。
+    if (cameraFound && data.isMember(m_flightInfo.camera.payloadIndex)) {
+        const Json::Value& gimbalInfo = data[m_flightInfo.camera.payloadIndex];
+        if (gimbalInfo.isObject()) {
+            if (gimbalInfo.isMember("gimbal_pitch")) {
+                m_flightInfo.gimbal.pitch = gimbalInfo["gimbal_pitch"].asDouble();
+            }
+            if (gimbalInfo.isMember("gimbal_yaw")) {
+                m_flightInfo.gimbal.yaw = gimbalInfo["gimbal_yaw"].asDouble();
+            }
+        } else {
+            pl_log(WARN, "payload index %s 对应的云台信息不是对象", m_flightInfo.camera.payloadIndex.c_str());
+        }
+    } else if (!cameraFound) {
+        pl_log(WARN, "未找到有效的相机信息，使用默认payloadIndex: %s", m_flightInfo.camera.payloadIndex.c_str());
     }
 
     return true;
