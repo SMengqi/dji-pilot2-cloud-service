@@ -32,7 +32,6 @@ void CameraController::commonZoomDataPackage(dji_cloud::drc_up_down& message)
     dji_cloud::drc_data* p_data = message.mutable_data();
 
     message.set_method("drc_camera_focal_length_set");
-    message.set_timestamp(get_milliseconds());
 
     p_data->set_camera_type("zoom");
     if (m_payloadIndex.empty()) { m_payloadIndex = "99-0-0"; }

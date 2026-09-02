@@ -77,7 +77,6 @@ void GimbalController::gimbalReset(void)
     dji_cloud::drc_data* p_data = message.mutable_data();
 
     message.set_method("drc_gimbal_reset");
-    message.set_timestamp(get_milliseconds());
 
     p_data->set_payload_index(m_payloadIndex);
     p_data->set_reset_mode(2);
@@ -117,7 +116,6 @@ void GimbalController::gimbalAngleDataPackage(const GimbalControlOffset& offset,
     dji_cloud::drc_data* p_data = message.mutable_data();
 
     message.set_method("drc_camera_screen_drag");
-    message.set_timestamp(get_milliseconds());
 
     p_data->set_payload_index(m_payloadIndex);
     p_data->set_locked(true);
@@ -164,7 +162,6 @@ bool GimbalController::handleCameraAim(const dji_cloud::gimbal_control_message& 
     dji_cloud::drc_data* p_data = message.mutable_data();
 
     message.set_method("drc_camera_aim");
-    message.set_timestamp(get_milliseconds());
 
     // camera_type透传内部平台下发的字段，未下发时按机场3原有默认值"wide"回退
     // （Pilot2多支持一个"ir"取值，见设计文档3.4节）
@@ -190,7 +187,6 @@ void GimbalController::handleCameraFrameZoom(const dji_cloud::gimbal_control_mes
     dji_cloud::drc_data* p_data = message.mutable_data();
 
     message.set_method("drc_camera_frame_zoom");
-    message.set_timestamp(get_milliseconds());
 
     p_data->set_payload_index(m_payloadIndex);
     // camera_type透传内部平台下发的字段，未下发时按机场3原有默认值"zoom"回退
