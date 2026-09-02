@@ -7,5 +7,8 @@ TARGET = libpayload_$(BUILDCOMMON).a
 include $(PSROOT)/build_scripts/platform.mk
 
 OBJECT += payloadMain.o
+OBJECT += payloadRequestManager.o
+OBJECT += gimbalController.o
+OBJECT += cameraController.o
 
 include $(PSROOT)/build_scripts/staticlibrary.mk

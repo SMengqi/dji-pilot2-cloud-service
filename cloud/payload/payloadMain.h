@@ -6,9 +6,15 @@
 #include "pf_thread_mon.h"
 
 #include "baseModule.h"
+#include "payloadRequestManager.h"
+#include "gimbalController.h"
+#include "cameraController.h"
+#include "ThreadPoolManager.h"
+
+#include <memory>
 
 /**
- * @brief 负载控制模块（Pilot2骨架）
+ * @brief 负载控制模块（Pilot2）
  *
  * 对应《机场3-Pilot2接口迁移对照表》第五节"负载控制（云台/相机）"：
  * gimbal_reset→drc_gimbal_reset、camera_screen_drag→drc_camera_screen_drag、
@@ -17,9 +23,10 @@
  * 字段名/取值枚举与机场3一致，差异仅在通道：机场3走 services(tid/bid匹配)，
  * Pilot2走 drc/down(seq顺序，回执只有{result})，详见清单文档。
  *
- * 机场3的探照灯(drc_light_*)、喊话器(speaker_control)不在本次迁移范围内，未包含在骨架里。
+ * 机场3的探照灯(drc_light_*)、喊话器(speaker_control)不在本次迁移范围内，未包含在本模块里。
  *
- * 当前为纯骨架：只保留模块注册框架，具体的云台/相机控制器待实现。
+ * 使用独立响应线程池处理drc/up回执，避免请求发送线程（阻塞等待sendRequestAndWait）
+ * 和回执处理线程是同一个池导致死锁，跟机场3PayloadMain的设计一致。
  */
 class PayloadMain : public BaseModule {
 public:
@@ -31,13 +38,19 @@ public:
     PayloadMain(const PayloadMain&) = delete;
     void operator=(const PayloadMain&) = delete;
 
+    void startResponsePool(size_t threadCount);
+    void stopResponsePool();
+    void postResponseTask(std::function<void()> task);
+
 private:
     PayloadMain();
     ~PayloadMain();
 
-    // TODO: std::unique_ptr<PayloadRequestManager> m_requestManager; DRC回执(result)匹配
-    // TODO: std::unique_ptr<GimbalController> m_gimbalController;    云台重置/拖拽/点控/框选变焦
-    // TODO: std::unique_ptr<CameraController> m_cameraController;   相机变焦
+    std::unique_ptr<PayloadRequestManager> m_requestManager;
+    std::unique_ptr<CameraController> m_cameraController;
+    std::unique_ptr<GimbalController> m_gimbalController;
+
+    ThreadPoolManager m_responsePoolManager;
 };
 
 #endif /*PAYLOADMAIN_H_*/

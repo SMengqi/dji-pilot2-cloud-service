@@ -39,12 +39,11 @@ MqttSubMain::MqttSubMain(std::string strServer, std::string cliendId) :
         {"fly_to_point_progress",     [this](const std::string& payload) { handleFlytoProgress(payload); }},
         // osd_info_push（drc/up 上的飞行器实时位置推送）暂不接入，flyto模块改用 TrackMain::getUavPoint()。
         // {"osd_info_push",             [this](const std::string& payload) { handleFlytoOsdInfoPush(payload); }},
-        // drc_gimbal_reset等5个负载方法留给 cloud/payload 模块实现时再接入（设计文档第7节落地顺序第4步）。
-        // {"drc_gimbal_reset",          [this](const std::string& payload) { handlePayloadResult(payload); }},
-        // {"drc_camera_screen_drag",    [this](const std::string& payload) { handlePayloadResult(payload); }},
-        // {"drc_camera_aim",            [this](const std::string& payload) { handlePayloadResult(payload); }},
-        // {"drc_camera_frame_zoom",     [this](const std::string& payload) { handlePayloadResult(payload); }},
-        // {"drc_camera_focal_length_set",[this](const std::string& payload) { handlePayloadResult(payload); }},
+        {"drc_gimbal_reset",          [this](const std::string& payload) { handlePayloadResult(payload); }},
+        {"drc_camera_screen_drag",    [this](const std::string& payload) { handlePayloadResult(payload); }},
+        {"drc_camera_aim",            [this](const std::string& payload) { handlePayloadResult(payload); }},
+        {"drc_camera_frame_zoom",     [this](const std::string& payload) { handlePayloadResult(payload); }},
+        {"drc_camera_focal_length_set",[this](const std::string& payload) { handlePayloadResult(payload); }},
     }
 {}
 

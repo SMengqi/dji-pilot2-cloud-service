@@ -168,6 +168,22 @@ public:
      */
     int parseResult(const std::string& msg, std::string& method, std::string& tid);
 
+    /**
+     * @brief 解析 drc/up 回执消息（drc_up_down 格式：{seq, method, data:{result}, timestamp}）
+     *
+     * 与 parseResult() 的区别：drc/up 回执没有 tid/bid 字段，请求-应答用 seq 顺序对应
+     * （见接口迁移设计文档第4节）。用 sendRequestAndWait() 发起drc/down请求时若把
+     * seq的字符串形式当tid传入，收到回执后应调用本方法解析、而不是parseResult()——
+     * 后者按services_reply解析，drc_up_down里没有tid字段，会一直解析出空字符串，
+     * 导致findAndUpdateRequest()永远匹配不到、请求必然超时。
+     *
+     * @param msg drc/up 回执的原始 JSON 字符串
+     * @param[out] method 方法名（输出参数）
+     * @param[out] seq seq的字符串形式（输出参数），需与发起请求时sendRequestAndWait()的tid参数一致
+     * @return int 结果码（0=成功，非0=失败），-1表示解析失败
+     */
+    int parseDrcResult(const std::string& msg, std::string& method, std::string& seq);
+
 private:
     // 当前等待中的请求
     std::unordered_map<std::string, std::shared_ptr<RequestContext>> m_pendingRequests;

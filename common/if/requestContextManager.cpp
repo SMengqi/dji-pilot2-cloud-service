@@ -116,6 +116,30 @@ int RequestContextManager::parseResult(const std::string &msg, std::string &meth
 }
 
 /**
+ * @brief 解析 drc/up 回执消息（drc_up_down 格式，没有tid/bid，用seq顺序对应）
+ * @param [in] msg drc/up 回执的原始 JSON 字符串
+ * @param [out] method 方法名
+ * @param [out] seq seq的字符串形式，需与sendRequestAndWait()发起请求时传入的tid参数一致
+ * @return 0 成功 -1 失败
+ */
+int RequestContextManager::parseDrcResult(const std::string &msg, std::string &method, std::string &seq)
+{
+    dji_cloud::drc_up_down message;
+    if (!json_to_proto(msg, message))
+    {
+        pl_log(ERR, "JSON to proto 转换失败(drc_up_down) | 原始数据: %.*s",
+               static_cast<int>(msg.size()), msg.data());
+        return -1;
+    }
+
+    const dji_cloud::drc_data& data = message.data();
+
+    method = message.method();
+    seq = std::to_string(message.seq());
+    return data.result();
+}
+
+/**
  * @brief 处理公共的响应消息
  * @param  msg 响应消息
  * @return void

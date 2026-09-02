@@ -268,6 +268,22 @@ message drc_data {
     optional uint32 seq = 10;
 
     optional uint64 timestamp = 11;
+
+    // 以下为 Pilot2 云台/相机负载控制新增字段(drc_gimbal_reset/drc_camera_screen_drag/
+    // drc_camera_aim/drc_camera_frame_zoom/drc_camera_focal_length_set)，字段名/类型与
+    // request_data 里对应字段完全一致，仅通道从services(tid/bid)换成drc/down(seq)。
+    // 新增字段一律追加在末尾，不复用/不调整已有字段号。
+    optional string payload_index = 12; // 相机枚举
+    optional uint32 reset_mode = 13;    // 云台重置模式 {"0":"回中","1":"向下","2":"偏航回中","3":"俯仰向下"}
+    optional bool locked = 14;          // 机头和云台的相对关系是否锁定
+    optional double pitch_speed = 15;   // 云台拖拽-俯仰速度
+    optional double yaw_speed = 16;     // 云台拖拽-偏航速度
+    optional string camera_type = 17;   // 相机类型
+    optional double x = 18;             // 目标坐标 x
+    optional double y = 19;             // 目标坐标 y
+    optional float width = 20;          // 框选变焦-目标框宽度
+    optional float height = 21;         // 框选变焦-目标框高度
+    optional float zoom_factor = 22;    // 相机变焦-缩放因子
 }
 
 message drc_up_down {
@@ -339,6 +355,10 @@ message gimbal_control_message {      // 云台控制指令
     optional float yaw = 8;
     optional float zoom_factor = 9;
     required string trans_id = 10;
+    // Pilot2新增：camera_type透传给drc_camera_aim/drc_camera_frame_zoom。
+    // 机场3只支持wide/zoom(写死在业务代码里)，Pilot2多支持一个ir(红外)取值，
+    // 内部平台若不下发此字段则按机场3原有默认值处理(aim默认wide，frame_zoom默认zoom)。
+    optional string camera_type = 11;
 }
 
 message code_message {    // 带有code码和描述的响应消息
