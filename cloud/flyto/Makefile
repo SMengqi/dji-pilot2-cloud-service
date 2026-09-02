@@ -7,5 +7,7 @@ TARGET = libflyto_$(BUILDCOMMON).a
 include $(PSROOT)/build_scripts/platform.mk
 
 OBJECT += flytoMain.o
+OBJECT += flytoRequestManager.o
+OBJECT += flytoController.o
 
 include $(PSROOT)/build_scripts/staticlibrary.mk

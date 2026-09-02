@@ -6,13 +6,16 @@
 
 /* Private functions declaration ---------------------------------------------*/
 FlytoMain::FlytoMain() :
-    BaseModule()
+    BaseModule(),
+    m_requestManager(std::make_unique<FlytoRequestManager>()),
+    m_flytoController(std::make_unique<FlytoController>(*m_requestManager))
 {
-    // TODO: 注册消息处理器，参考机场3 FlytoMain 构造函数，例如：
-    // getDispatcher()->registerHandler(FLYTO_RESULT_DATA_IND,
-    //             [this](const std::string& msg) { m_requestManager->handleFlytoResult(msg); });
-    // getDispatcher()->registerHandler(COMMON_REG_IND,
-    //             [this](const std::string& msg) { m_flytoController->handleFlightControl(msg); });
+    getDispatcher()->registerHandler(FLYTO_RESULT_DATA_IND,
+                [this](const std::string& msg) { m_requestManager->handleFlytoResult(msg); });
+    getDispatcher()->registerHandler(FLYTO_PROGRESS_DATA_IND,
+                [this](const std::string& msg) { m_flytoController->handleFlytoProgress(msg); });
+    getDispatcher()->registerHandler(COMMON_REG_IND,
+                [this](const std::string& msg) { m_flytoController->handleFlightControl(msg); });
 }
 
 FlytoMain::~FlytoMain()

@@ -6,20 +6,21 @@
 #include "pf_thread_mon.h"
 
 #include <string>
+#include <memory>
 
 #include "baseModule.h"
+#include "flytoRequestManager.h"
+#include "flytoController.h"
 
 /**
- * @brief 飞行控制模块（Pilot2骨架）
+ * @brief 飞行控制模块（Pilot2）
  *
- * 对应《机场3-Pilot2接口迁移对照表》里"一样"和"有变化"的三大块：
- * - 二、DRC链路管理：drc_mode_enter / drc_mode_exit / heart_beat（services + drc/down，字段与机场3一致）
- * - 三、权限抢占：cloud_control_auth_request / cloud_control_release / cloud_control_auth_notify
- *   （services + events，取代机场3声明未用的 payload_authority_grab / flight_authority_grab）
- * - 四、飞行控制：takeoff_to_point / fly_to_point / fly_to_point_update / fly_to_point_stop /
- *   return_home / return_home_cancel / stick_control（字段与机场3基本一致，参见清单文档）
+ * 对应设计文档3.3节：takeoff_to_point / fly_to_point / fly_to_point_update / return_home /
+ * stick_control（字段与机场3基本一致），以及内部平台接入的MOVE/TURN/CONTINUOUS_MOVE/STOP_MOVE
+ * action码。DRC链路管理(drc_mode_enter/exit/heart_beat)和权限抢占(cloud_control_auth_*)
+ * 不在本项目范围，由控制平台另一组实现（见设计文档第1节范围收窄说明），本模块不涉及。
  *
- * 当前为纯骨架：只保留模块注册框架，具体的请求管理器/控制器待实现。
+ * fly_to_point_stop/return_home_cancel（机场3没有的新方法）暂不实现，留到其它部分完成后再补充。
  */
 class FlytoMain : public BaseModule
 {
@@ -36,8 +37,8 @@ private:
     FlytoMain();
     ~FlytoMain();
 
-    // TODO: std::unique_ptr<FlytoRequestManager> m_requestManager; services请求/应答匹配(tid)
-    // TODO: std::unique_ptr<FlytoController> m_flytoController;    DRC链路管理/权限抢占/飞行控制/杆量控制实现
+    std::unique_ptr<FlytoRequestManager> m_requestManager; // services请求/应答匹配(tid)
+    std::unique_ptr<FlytoController> m_flytoController;    // 飞行控制/杆量控制实现
 };
 
 #endif /*FLYTOMAIN_H_*/
