@@ -30,15 +30,18 @@ GimbalController::GimbalController(PayloadRequestManager& requestManager, Camera
 {}
 
 /**
- * @brief 发送drc/down请求并等待drc/up回执（按seq匹配，见payloadRequestManager.h说明）
+ * @brief 发送drc/down请求并等待drc/up回执（按method名匹配，见payloadRequestManager.h说明）
+ *
+ * seq仍照常设置（心跳等其它method的真实抓包里带seq），但不用它做请求-应答匹配——
+ * ★已用真实抓包核实（2026-09-02）：drc_camera_aim的请求和回执都完全没有seq字段，
+ * 用seq匹配对它必然失效；用method名匹配则不受此影响。
  */
 bool GimbalController::sendRequest(dji_cloud::drc_up_down& message, const std::string& log, std::string& errResult)
 {
-    uint32_t currentSeq = s_drcHeartbeatCount.fetch_add(1);
-    message.set_seq(currentSeq);
-    std::string seqStr = std::to_string(currentSeq);
+    message.set_seq(s_drcHeartbeatCount.fetch_add(1));
+    std::string methodKey = message.method();
     uint32_t msgId = static_cast<uint32_t>(DJI_DRC_DOWN_PUBLISH_DATA_IND);
-    return m_requestManager.sendRequestAndWait(message, seqStr, msgId, log, errResult);
+    return m_requestManager.sendRequestAndWait(message, methodKey, msgId, log, errResult);
 }
 
 void GimbalController::sendResult(bool ret, const std::string& log, const std::string& errResult)

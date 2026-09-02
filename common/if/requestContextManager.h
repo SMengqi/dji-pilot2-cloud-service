@@ -171,18 +171,21 @@ public:
     /**
      * @brief 解析 drc/up 回执消息（drc_up_down 格式：{seq, method, data:{result}, timestamp}）
      *
-     * 与 parseResult() 的区别：drc/up 回执没有 tid/bid 字段，请求-应答用 seq 顺序对应
-     * （见接口迁移设计文档第4节）。用 sendRequestAndWait() 发起drc/down请求时若把
-     * seq的字符串形式当tid传入，收到回执后应调用本方法解析、而不是parseResult()——
-     * 后者按services_reply解析，drc_up_down里没有tid字段，会一直解析出空字符串，
-     * 导致findAndUpdateRequest()永远匹配不到、请求必然超时。
+     * 与 parseResult() 的区别：drc/up 回执没有 tid/bid 字段，parseResult()按services_reply
+     * 解析会一直取到空字符串tid，导致findAndUpdateRequest()永远匹配不到、请求必然超时。
+     *
+     * 请求-应答按method名匹配，不按seq匹配——★已用真实抓包核实（2026-09-02）：
+     * 同一时刻drc/down上通常只有一条指令在途，但seq字段并不是所有method都会回显，
+     * 例如 drc_camera_aim 的请求和回执都完全没有seq字段（而 drc_camera_point_focus_action/
+     * heart_beat 等method则请求和回执的seq一致）。用sendRequestAndWait()发起drc/down请求时
+     * 应把DJI method名本身当tid参数传入，收到回执后调用本方法解析、用同一个method名去
+     * findAndUpdateRequest()匹配。
      *
      * @param msg drc/up 回执的原始 JSON 字符串
-     * @param[out] method 方法名（输出参数）
-     * @param[out] seq seq的字符串形式（输出参数），需与发起请求时sendRequestAndWait()的tid参数一致
+     * @param[out] method 方法名（输出参数），需与发起请求时sendRequestAndWait()的tid参数一致
      * @return int 结果码（0=成功，非0=失败），-1表示解析失败
      */
-    int parseDrcResult(const std::string& msg, std::string& method, std::string& seq);
+    int parseDrcResult(const std::string& msg, std::string& method);
 
 private:
     // 当前等待中的请求

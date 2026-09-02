@@ -7,9 +7,12 @@
 /**
  * Pilot2的5个负载方法(drc_gimbal_reset/drc_camera_screen_drag/drc_camera_aim/
  * drc_camera_frame_zoom/drc_camera_focal_length_set)全部走drc/down/drc/up，
- * 跟机场3(services/services_reply)不同，回执解析用parseDrcResult()（按seq匹配，
+ * 跟机场3(services/services_reply)不同，回执解析用parseDrcResult()（按method名匹配，
  * 而不是parseResult()按tid匹配——drc_up_down没有tid字段，用parseResult()解析
  * 永远匹配不到、请求必然超时，见requestContextManager.h的说明）。
+ *
+ * ★已用真实抓包核实（2026-09-02）：请求-应答按method名匹配，不按seq匹配——
+ * seq字段并非所有method都会在drc/up回执里回显（drc_camera_aim完全没有seq字段）。
  */
 class PayloadRequestManager : public RequestContextManager {
 public:

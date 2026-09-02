@@ -22,19 +22,19 @@ void PayloadRequestManager::handlePayloadResult(const std::string& msg)
 {
     std::string jsonStr(msg);
     std::string method;
-    std::string seq;
-    int result = parseDrcResult(jsonStr, method, seq);
+    int result = parseDrcResult(jsonStr, method);
 
     auto it = m_resultMap.find(method);
     std::string data = (it != m_resultMap.end()) ? it->second : method;
     if (data.empty()) return;
 
     pl_log(INF, "收到%s响应 | result: %d | data:%s", method.c_str(), result, data.c_str());
-    // 在 pendingRequests 中查找对应请求（key为发起请求时的seq字符串，不是tid）
+    // 在 pendingRequests 中查找对应请求（key为发起请求时的method名，不是tid/seq——
+    // 真实抓包证实seq并非所有method都会回显，按method名匹配才可靠，见requestContextManager.h说明）
     std::shared_ptr<RequestContext> reqCtx;
-    if (!findAndUpdateRequest(seq, result, reqCtx))
+    if (!findAndUpdateRequest(method, result, reqCtx))
     {
-        pl_log(WARN, "未找到对应的请求 | seq=%s ", seq.c_str());
+        pl_log(WARN, "未找到对应的请求 | method=%s ", method.c_str());
         return;
     }
 

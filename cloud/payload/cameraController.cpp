@@ -56,16 +56,18 @@ void CameraController::controlResult(bool& ret, std::string& log, std::string& e
 }
 
 /**
- * @brief 发送drc/down请求并等待drc/up回执（按seq匹配，见payloadRequestManager.h说明）
+ * @brief 发送drc/down请求并等待drc/up回执（按method名匹配，见payloadRequestManager.h说明）
+ *
+ * seq仍照常设置，但不用它做请求-应答匹配——★已用真实抓包核实（2026-09-02）：
+ * 部分method(如drc_camera_aim)的请求和回执都完全没有seq字段，用seq匹配必然失效。
  */
 bool CameraController::sendRequest(dji_cloud::drc_up_down &message, std::string &log, bool is_up_result)
 {
-    uint32_t currentSeq = s_drcHeartbeatCount.fetch_add(1);
-    message.set_seq(currentSeq);
-    std::string seqStr = std::to_string(currentSeq);
+    message.set_seq(s_drcHeartbeatCount.fetch_add(1));
+    std::string methodKey = message.method();
     uint32_t msgId = static_cast<uint32_t>(DJI_DRC_DOWN_PUBLISH_DATA_IND);
     std::string errResult;
-    bool ret = m_requestManager.sendRequestAndWait(message, seqStr, msgId, log, errResult);
+    bool ret = m_requestManager.sendRequestAndWait(message, methodKey, msgId, log, errResult);
     if (is_up_result)
     {
         controlResult(ret, log, errResult);
