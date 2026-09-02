@@ -7,5 +7,6 @@ TARGET = libdevice_$(BUILDCOMMON).a
 include $(PSROOT)/build_scripts/platform.mk
 
 OBJECT += deviceMain.o
+OBJECT += rcProperties.o
 
 include $(PSROOT)/build_scripts/staticlibrary.mk

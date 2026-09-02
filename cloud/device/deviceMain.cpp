@@ -8,17 +8,23 @@
 
 /* Private functions declaration ---------------------------------------------*/
 DeviceMain::DeviceMain() :
-    BaseModule()
+    BaseModule(),
+    m_rcProperties(std::make_unique<RcProperties>())
 {
-    // TODO: 注册属性上报消息处理器，参考机场3 DeviceMain 构造函数的写法，例如：
-    // getDispatcher()->registerHandler(COMMON_REG_IND, [this](const std::string& msg) {
-    //     m_rcProperties->parse(msg);         // 或按 topic 区分转给 m_aircraftProperties
-    // });
+    getDispatcher()->registerHandler(COMMON_REG_IND, [this](const std::string& msg) {
+        // 处理遥控器(网关)属性；mqttsubMain.cpp 里 thing/product/{rc_sn}/osd 已路由到本模块
+        m_rcProperties->parseRcOsdData(msg);
+    });
 }
 
 DeviceMain::~DeviceMain()
 {
     stopThreadPool();
+}
+
+uint16_t DeviceMain::getDrcState()
+{
+    return m_rcProperties->getDrcState();
 }
 
 /**********************************************************************************************
