@@ -89,7 +89,9 @@ void CameraController::specifyZoomFator(float& zoomFactor)
     commonZoomDataPackage(message);
 
     std::string log = "相机焦距设置为: " + std::to_string(zoomFactor);
-    sendRequest(message, log, false);
+    // is_up_result默认true——这一步（"看的清"组合动作里的变焦部分）现在会单独上报成功/失败，
+    // 不再被静默吞掉（之前用false会导致瞄准成功但变焦失败时，内部平台完全收不到变焦失败的结果）。
+    sendRequest(message, log);
 }
 
 
@@ -303,6 +305,8 @@ void CameraController::handleCameraControl(const std::string& msg)
     if (it != m_typeHandler.end()) {
         it->second();
     } else {
-        pl_log(WARN, "未知的相机控制类型: %d", camera_msg.camera_zoom_direction());
+        std::string data = "未知的相机控制类型: " + std::to_string(camera_msg.camera_zoom_direction());
+        pl_log(WARN, "%s", data.c_str());
+        handleUavResult(static_cast<uint16_t>(STATE_CAMERA_ZOOM_FAILED), data, 1);
     }
 }

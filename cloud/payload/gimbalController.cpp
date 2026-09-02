@@ -139,7 +139,9 @@ void GimbalController::handleCameraScreenDrag(const dji_cloud::gimbal_control_me
 
     const std::unordered_set<int> valid_actions = {4,5,7};
     if (valid_actions.count(direction)) {
-        pl_log(ERR, "暂不支持的云台转向指令 | direction: %d", direction);
+        std::string data = "暂不支持的云台转向指令 | direction: " + std::to_string(direction);
+        pl_log(ERR, "%s", data.c_str());
+        handleUavResult(static_cast<uint16_t>(STATE_GIMBAL_CONTROL_FAILED), data, 1);
         return;
     }
 
@@ -256,7 +258,9 @@ void GimbalController::handleGimbalControl(const std::string& msg)
 {
     dji_cloud::gimbal_control_message gimbal_msg;
     if (!json_to_proto(msg, gimbal_msg)) {
-        pl_log(ERR, "解析云台控制消息失败 | 原始数据: %.*s", static_cast<int>(msg.size()), msg.data());
+        std::string data = "解析云台控制消息失败";
+        pl_log(ERR, "%s | 原始数据: %.*s", data.c_str(), static_cast<int>(msg.size()), msg.data());
+        handleUavResult(static_cast<uint16_t>(STATE_GIMBAL_CONTROL_FAILED), data, 1);
         return;
     }
 
@@ -270,6 +274,8 @@ void GimbalController::handleGimbalControl(const std::string& msg)
     if (it != m_typeHandlerMap.end()) {
         it->second(gimbal_msg);
     } else {
-        pl_log(WARN, "未知的云台控制类型: %d", gimbal_msg.type());
+        std::string data = "未知的云台控制类型: " + std::to_string(gimbal_msg.type());
+        pl_log(WARN, "%s", data.c_str());
+        handleUavResult(static_cast<uint16_t>(STATE_GIMBAL_CONTROL_FAILED), data, 1);
     }
 }
