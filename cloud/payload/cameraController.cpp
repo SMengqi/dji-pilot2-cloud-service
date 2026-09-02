@@ -26,6 +26,12 @@ CameraController::CameraController(PayloadRequestManager& requestManager):
 
 /**
  * @brief 封装 相机变焦 (method: drc_camera_focal_length_set)
+ *
+ * payload_index每次都直接从TrackMain重新获取，不依赖类成员缓存——specifyZoomFator()
+ * 由GimbalController的"看的清"组合功能(ANGLE_ZOOM/AIM_ZOOM)直接调用时，并不会经过
+ * handleCameraControl()这个入口，之前m_payloadIndex只在handleCameraControl()里被赋值，
+ * 导致走specifyZoomFator()这条路径时m_payloadIndex一直是空字符串、兜底成默认值"99-0-0"，
+ * 跟真实负载对不上，被设备拒收(实测result:327010)。
  */
 void CameraController::commonZoomDataPackage(dji_cloud::drc_up_down& message)
 {
@@ -33,8 +39,9 @@ void CameraController::commonZoomDataPackage(dji_cloud::drc_up_down& message)
 
     message.set_method("drc_camera_focal_length_set");
 
-    p_data->set_camera_type("zoom");
+    m_payloadIndex = TrackMain::getInstance().getPayloadIndex();
     if (m_payloadIndex.empty()) { m_payloadIndex = "99-0-0"; }
+    p_data->set_camera_type("zoom");
     p_data->set_payload_index(m_payloadIndex);
     p_data->set_zoom_factor(m_currentZoomFactor);
 }
@@ -291,7 +298,6 @@ void CameraController::handleCameraControl(const std::string& msg)
         handleUavResult(code, data, 1);
         return;
     }
-    m_payloadIndex = TrackMain::getInstance().getPayloadIndex();
 
     auto it = m_typeHandler.find(camera_msg.camera_zoom_direction());
     if (it != m_typeHandler.end()) {
