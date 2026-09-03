@@ -257,7 +257,10 @@ bool TrackMain::parseStateMsg(const std::string& msg)
         pl_log(INF, "云端控制权状态变化 | control_source: %s -> %s",
                prevActive ? "云端" : "物理设备", cloudActive ? "云端" : "物理设备");
     }
-    pl_log(TRC, "control_source: %s", controlSource.c_str());
+    // 调试用：把原始值和判定结果都打出来，方便切换控制权时直接对照实际取值
+    // （设计文档第6节待确认事项1的判断依据来自官方文档，还没有真实控制权切换场景验证过）
+    pl_log(INF, "control_source原始值: \"%s\" | 判定: %s",
+           controlSource.c_str(), cloudActive ? "云端" : "物理设备");
 
     return true;
 }
