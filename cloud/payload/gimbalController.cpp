@@ -38,6 +38,14 @@ GimbalController::GimbalController(PayloadRequestManager& requestManager, Camera
  */
 bool GimbalController::sendRequest(dji_cloud::drc_up_down& message, const std::string& log, std::string& errResult)
 {
+    // control_source不是"A"/"B"(物理设备)才代表云端持有控制权，见设计文档第6节待确认事项1。
+    // 加在这个统一出口上，覆盖handleGimbalControl()和"看的清"组合动作绕开该入口的两条路径。
+    if (!TrackMain::getInstance().isCloudControlActive()) {
+        errResult = "(云端未持有控制权)";
+        pl_log(WARN, "云端尚未持有控制权(control_source非云端)，无法下发%s指令", log.c_str());
+        return false;
+    }
+
     message.set_seq(s_drcHeartbeatCount.fetch_add(1));
     std::string methodKey = message.method();
     uint32_t msgId = static_cast<uint32_t>(DJI_DRC_DOWN_PUBLISH_DATA_IND);

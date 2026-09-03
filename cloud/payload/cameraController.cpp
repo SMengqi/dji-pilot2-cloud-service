@@ -69,6 +69,18 @@ void CameraController::controlResult(bool& ret, std::string& log, std::string& e
  */
 bool CameraController::sendRequest(dji_cloud::drc_up_down &message, std::string &log, bool is_up_result)
 {
+    // control_source不是"A"/"B"(物理设备)才代表云端持有控制权，见设计文档第6节待确认事项1。
+    // 加在这个统一出口上，覆盖handleCameraControl()和"看的清"组合动作绕开该入口的两条路径。
+    if (!TrackMain::getInstance().isCloudControlActive()) {
+        std::string errResult = "(云端未持有控制权)";
+        pl_log(WARN, "云端尚未持有控制权(control_source非云端)，无法下发%s指令", log.c_str());
+        if (is_up_result) {
+            bool ret = false;
+            controlResult(ret, log, errResult);
+        }
+        return false;
+    }
+
     message.set_seq(s_drcHeartbeatCount.fetch_add(1));
     std::string methodKey = message.method();
     uint32_t msgId = static_cast<uint32_t>(DJI_DRC_DOWN_PUBLISH_DATA_IND);
