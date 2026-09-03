@@ -947,6 +947,11 @@ bool FlytoController::ensureFlightControlAndMode()
         pl_log(WARN, "DRC链路未就绪，无法下发飞行控制指令");
         return false;
     }
+    // control_source不是"A"/"B"(物理设备)才代表云端持有控制权，见设计文档第6节待确认事项1
+    if (!TrackMain::getInstance().isCloudControlActive()) {
+        pl_log(WARN, "云端尚未持有飞行控制权(control_source非云端)，无法下发飞行控制指令");
+        return false;
+    }
     return true;
 }
 
