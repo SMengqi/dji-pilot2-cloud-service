@@ -243,6 +243,10 @@ bool TrackMain::parseStateMsg(const std::string& msg)
         return false;
     }
 
+    // 调试用：state按需/变化推送，不是每条都带control_source，先把每条收到的原始消息都打出来，
+    // 确认到底是"完全没收到state消息"还是"收到了但这条没带control_source"
+    pl_log(INF, "收到飞行器state消息 | 原始数据: %.*s", static_cast<int>(msg.size()), msg.data());
+
     const Json::Value& data = root["data"];
     if (!data.isObject() || !data.isMember("control_source")) {
         // state消息按变化上报，很多次只带其它字段(如payloads/commander_flight_mode等)，
