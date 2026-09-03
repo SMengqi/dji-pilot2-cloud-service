@@ -947,11 +947,14 @@ bool FlytoController::ensureFlightControlAndMode()
         pl_log(WARN, "DRC链路未就绪，无法下发飞行控制指令");
         return false;
     }
-    // control_source不是"A"/"B"(物理设备)才代表云端持有控制权，见设计文档第6节待确认事项1
-    if (!TrackMain::getInstance().isCloudControlActive()) {
-        pl_log(WARN, "云端尚未持有飞行控制权(control_source非云端)，无法下发飞行控制指令");
-        return false;
-    }
+    // control_source检查暂时关闭（2026-09-03）：真实环境里thing/product/{aircraft_sn}/state这个topic
+    // broker端根本没有推送任何消息（用mosquitto_sub独立验证过，排除了我们自己代码的问题），
+    // 导致m_cloudControlActive永远是默认值false，这道检查会100%拦截所有飞行控制指令。
+    // 在DJI/broker那边的问题解决之前先关掉，见设计文档第6节待确认事项1。
+    // if (!TrackMain::getInstance().isCloudControlActive()) {
+    //     pl_log(WARN, "云端尚未持有飞行控制权(control_source非云端)，无法下发飞行控制指令");
+    //     return false;
+    // }
     return true;
 }
 
