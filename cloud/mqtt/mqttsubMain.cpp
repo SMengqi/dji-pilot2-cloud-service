@@ -20,6 +20,9 @@ extern bxt_cloud_common::common_message s_pbCommonCfg;
 // 但机场3走"机场OSD"，这里走"遥控器OSD"。
 std::string s_aircraftOsd;
 std::string s_rcOsd;
+// 飞行器state属性：control_source(云端控制权判断信号)就在这个topic里，不在osd里
+// （见接口迁移设计文档第6节待确认事项1，2026-09-02已用官方文档确认判断依据）
+std::string s_aircraftState;
 
 /* Private values ------------------------------------------------------------*/
 std::string MqttSubMain::m_topicsFileName = "config/bootup/mqtt_sub_topics.txt";
@@ -105,6 +108,9 @@ void MqttSubMain::onRead(std::string topic, std::string payload)
     if (topic.find(s_aircraftOsd) != std::string::npos) {
         pf_copy_msg(THIS_MODULE, COMMON_REG_IND, MODULE_TRACK, (void*)payload.c_str(), payload.size());
 
+    } else if (topic.find(s_aircraftState) != std::string::npos) {
+        pf_copy_msg(THIS_MODULE, TRACK_STATE_DATA_IND, MODULE_TRACK, (void*)payload.c_str(), payload.size());
+
     } else if (topic.find(s_rcOsd) != std::string::npos) {
         pf_copy_msg(THIS_MODULE, COMMON_REG_IND, MODULE_DEVICE, (void*)payload.c_str(), payload.size());
 
@@ -188,6 +194,9 @@ S32 MqttSubMain::loadSubTopics(void)
                 rcOsd = buffer;
                 rcOsd.replace(pos, 1, s_pbCommonCfg.dock_sn());
                 buffer.replace(pos, 1, s_pbCommonCfg.aircraft_sn());
+            } else if (buffer.find("state") != std::string::npos) {
+                // 飞行器state(control_source)是本条唯一诉求，只订阅飞行器SN，不像osd那样还需要遥控器SN
+                buffer.replace(pos, 1, s_pbCommonCfg.aircraft_sn());
             } else {
                 buffer.replace(pos, 1, s_pbCommonCfg.dock_sn());
             }
@@ -215,6 +224,7 @@ S32 mqttsub_init(U32 ulModuleId)
 
     s_aircraftOsd = s_pbCommonCfg.aircraft_sn() + "/osd";
     s_rcOsd = s_pbCommonCfg.dock_sn() + "/osd";
+    s_aircraftState = s_pbCommonCfg.aircraft_sn() + "/state";
 
     return PF_RET_SUCCESS;
 }

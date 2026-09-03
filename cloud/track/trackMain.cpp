@@ -215,6 +215,59 @@ float TrackMain::getZoomFactor()
     return m_flightInfo.camera.zoomFactor;
 }
 
+bool TrackMain::isCloudControlActive()
+{
+    return m_cloudControlActive.load();
+}
+
+/**
+ * @brief 解析飞行器属性state消息，目前只取control_source一个字段
+ *
+ * control_source取值："A"/"B"代表物理遥控器在控制，其它值(含云端/浏览器自生成的UUID)代表
+ * 云端持有控制权（见接口迁移设计文档第6节待确认事项1，依据《Pilot2(RC Plus 2)官方接口清单》）。
+ */
+bool TrackMain::parseStateMsg(const std::string& msg)
+{
+    Json::Value root;
+    Json::CharReaderBuilder builder;
+    std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+    std::string errs;
+
+    bool parsingSuccessful = reader->parse(
+        msg.c_str(), msg.c_str() + msg.size(),
+        &root, &errs
+    );
+
+    if (!parsingSuccessful || !errs.empty()) {
+        pl_log(ERR, "JSON 解析失败(state): %s", errs.c_str());
+        return false;
+    }
+
+    const Json::Value& data = root["data"];
+    if (!data.isObject() || !data.isMember("control_source")) {
+        // state消息按变化上报，很多次只带其它字段(如payloads/commander_flight_mode等)，
+        // 没带control_source是正常情况，不算错误
+        return true;
+    }
+
+    std::string controlSource = data["control_source"].asString();
+    bool cloudActive = !controlSource.empty() && controlSource != "A" && controlSource != "B";
+    bool prevActive = m_cloudControlActive.exchange(cloudActive);
+    if (cloudActive != prevActive) {
+        pl_log(INF, "云端控制权状态变化 | control_source: %s -> %s",
+               prevActive ? "云端" : "物理设备", cloudActive ? "云端" : "物理设备");
+    }
+    pl_log(TRC, "control_source: %s", controlSource.c_str());
+
+    return true;
+}
+
+void TrackMain::handleStateMsg(const char* msg)
+{
+    if (!msg) return;
+    parseStateMsg(std::string(msg));
+}
+
 /**********************************************************************************************
 * @function   : track_init
 **********************************************************************************************/
@@ -235,6 +288,11 @@ void track_entry(U32 ulSrcModuleId, U32 ulMsgId, U32 ulDstModuleId,
     {
         case COMMON_REG_IND: {
             TrackMain::getInstance().handleOsdMsg(static_cast<const char*>(pcvMsg));
+        }
+        break;
+
+        case TRACK_STATE_DATA_IND: {
+            TrackMain::getInstance().handleStateMsg(static_cast<const char*>(pcvMsg));
         }
         break;
 

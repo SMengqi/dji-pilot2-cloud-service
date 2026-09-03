@@ -66,4 +66,5 @@ DECL_EVENT(REMOTE_DEBUG_DATA_IND,           0),
 // 中间插入会整体后移 DJI_SERVICES_PUBLISH_DATA_IND / DJI_DRC_DOWN_PUBLISH_DATA_IND 等的数值，
 // 一旦各模块未完全一致重编译，模块间消息路由(pf_copy_msg)就会错乱，导致控制消息发不出去。
 DECL_EVENT(FLYTO_PROGRESS_DATA_IND,         0),
+DECL_EVENT(TRACK_STATE_DATA_IND,            0),
 

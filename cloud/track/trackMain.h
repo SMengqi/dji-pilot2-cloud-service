@@ -47,6 +47,12 @@ public:
     // 飞机飞行模式码（来自飞行器属性OSD，-1 表示未知）：用于判断是否被外部接管（返航/降落等）
     int getUavModeCode();
 
+    // 解析飞行器属性state消息（control_source等，跟osd是不同topic）
+    void handleStateMsg(const char* msg);
+    // 云端是否真正持有控制权：control_source不是"A"/"B"（物理设备）即视为云端
+    // （见接口迁移设计文档第6节待确认事项1，2026-09-02已用《Pilot2(RC Plus 2)官方接口清单》确认判断依据）
+    bool isCloudControlActive();
+
 private:
     TrackMain();
     ~TrackMain() = default;
@@ -56,6 +62,8 @@ private:
     // 封装flightInfo
     void packFlightInfo();
     void packPayloadParam();
+    // 解析飞行器属性state消息
+    bool parseStateMsg(const std::string& msg);
 
 private:
     struct BatteryInfo {
@@ -91,6 +99,8 @@ private:
     FlightInfo m_flightInfo;
     // 飞机飞行模式码（原子，跨线程读写安全；新成员追加末尾，避免改变已有成员偏移）
     std::atomic<int> m_uavModeCode{-1};
+    // 云端是否持有控制权（原子，跨线程读写安全；新成员追加末尾，避免改变已有成员偏移）
+    std::atomic<bool> m_cloudControlActive{false};
 };
 
 #endif /*TRACKMAIN_H_*/
