@@ -89,7 +89,7 @@ void GimbalController::gimbalReset(void)
     message.set_method("drc_gimbal_reset");
 
     p_data->set_payload_index(m_payloadIndex);
-    p_data->set_reset_mode(2);
+    p_data->set_reset_mode(0);  // 回中（pitch+yaw都归位）；机场3原代码写死2(偏航回中)，2026-09确认改为0，机场3不动
 
     std::string log = "云台重置";
     sendRequestAndResult(message, log);
