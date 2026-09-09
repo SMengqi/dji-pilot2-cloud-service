@@ -2,8 +2,8 @@
 
 用于 DJI Pilot2 (RC Plus 2) 上云自定义接口开发，架构参考 `dji_dock3_cloud_service`（机场3云端服务）。
 
-当前状态：**纯骨架**——目录结构、构建系统、模块注册框架已经搭好并能对应编译单元，
-但每个模块内部的业务逻辑（控制器类、请求管理器、属性解析器等）都还是空的，标了 `TODO`。
+当前状态：`device`/`flyto`/`track`/`payload` 四个模块的业务逻辑均已实现并经过真机联调（详见
+`docs/design/interface-porting-design.md`），进入收尾阶段——剩余问题见下方"待办"。
 
 ## 与机场3项目的关系
 
@@ -12,7 +12,7 @@
   两边各自独立演化，以后框架层的改动需要分别同步。
 - `cloud/` 是本项目自己重新搭的业务模块目录，**没有整体复制**机场3的 `cloud/`：
   - 保留：`root`（入口）、`lcf`（配置加载，原样复制）、`mqtt`（MQTT收发，做了精简）、
-    `device`、`flyto`、`track`、`payload`（这四个是全新的空骨架）
+    `device`、`flyto`、`track`、`payload`（这四个是全新实现，业务逻辑已完成）
   - 删除：`waypoint`（机场3的KMZ航线任务模块）——因为 Pilot2 官方接口没有开放云端可管理航线任务的能力，
     详见迁移分析文档，不在本项目职责范围内
 
@@ -36,10 +36,17 @@
 
 ## 待办
 
-- [ ] `cloud/device`：实现遥控器属性解析器、飞行器属性解析器
-- [ ] `cloud/flyto`：实现 FlytoRequestManager（tid/seq匹配）、FlytoController（DRC进退/权限抢占/飞行控制/杆量控制）
-- [ ] `cloud/track`：实现飞行器OSD解析
-- [ ] `cloud/payload`：实现 PayloadRequestManager、GimbalController、CameraController（drc/down通道，注意回执无tid/bid）
+四个业务模块已实现完成并经过真机联调（详见 `docs/design/interface-porting-design.md` 第7/8节），剩余待办：
+
+- [ ] **恢复 `control_source` 云端控制权校验**：`cloud/flyto/flytoController.cpp`、
+      `cloud/payload/gimbalController.cpp`、`cloud/payload/cameraController.cpp` 里的
+      `isCloudControlActive()` 检查目前被临时注释——真机测试发现 broker 不推送
+      `thing/product/{aircraft_sn}/state` topic（DJI/broker 侧问题，非本项目代码问题），
+      导致该检查永远拿不到值。等 broker 侧问题解决后需取消注释恢复三处检查。
+- [ ] `fly_to_point_stop`/`return_home_cancel` 未实现：内部平台目前没有触发这两个方法的 action 码，
+      待其余部分稳定后再补充
+- [ ] `drc_camera_screen_drag` 的 `locked` 写死 `true`（官方示例为 `false`）、相机变焦上限写死 112
+      （官方范围可见光为 2~200），两处沿用机场3原有取值，是否需要调整待确认
 - [ ] `common/proto/bxt_cloud_common.proto` 里 `dock_sn` 字段的语义需要按Pilot2重新梳理（遥控器SN替代机场SN），
       目前 `cloud/mqtt/mqttsubMain.cpp` 里仍暂用这个字段名，已标 TODO
 - [ ] 未纳入 SVN，确定要长期维护时再决定入库路径
