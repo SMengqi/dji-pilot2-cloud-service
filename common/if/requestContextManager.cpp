@@ -95,7 +95,10 @@ bool RequestContextManager::waitForDockNotice(std::string tid, std::string& log,
 int RequestContextManager::parseResult(const std::string &msg, std::string &method, std::string &tid)
 {
     dji_cloud::services_reply message;
-    if (!json_to_proto(msg, message))
+    // 用json_to_proto2(忽略未知字段)而不是json_to_proto：真机services_reply的data里出现过
+    // reply_data未声明的task_seq字段，严格模式会导致整条解析失败(method/tid全空、result=-1)，
+    // 进而让明明成功的响应匹配不到pending请求、最终误判超时上报失败（2026-09真机日志实测）。
+    if (!json_to_proto2(msg, message))
     {
         pl_log(ERR, "JSON to proto 转换失败 | 原始数据: %.*s",
                static_cast<int>(msg.size()), msg.data());
@@ -125,7 +128,8 @@ int RequestContextManager::parseResult(const std::string &msg, std::string &meth
 int RequestContextManager::parseDrcResult(const std::string &msg, std::string &method)
 {
     dji_cloud::drc_up_down message;
-    if (!json_to_proto(msg, message))
+    // 同parseResult()的理由，改用json_to_proto2防止drc/up出现未声明字段时整条解析失败
+    if (!json_to_proto2(msg, message))
     {
         pl_log(ERR, "JSON to proto 转换失败(drc_up_down) | 原始数据: %.*s",
                static_cast<int>(msg.size()), msg.data());
