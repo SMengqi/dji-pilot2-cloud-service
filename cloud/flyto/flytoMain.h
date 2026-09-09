@@ -16,11 +16,11 @@
  * @brief 飞行控制模块（Pilot2）
  *
  * 对应设计文档3.3节：takeoff_to_point / fly_to_point / fly_to_point_update / return_home /
- * stick_control（字段与机场3基本一致），以及内部平台接入的MOVE/TURN/CONTINUOUS_MOVE/STOP_MOVE
- * action码。DRC链路管理(drc_mode_enter/exit/heart_beat)和权限抢占(cloud_control_auth_*)
- * 不在本项目范围，由控制平台另一组实现（见设计文档第1节范围收窄说明），本模块不涉及。
- *
- * fly_to_point_stop/return_home_cancel（机场3没有的新方法）暂不实现，留到其它部分完成后再补充。
+ * fly_to_point_stop / return_home_cancel / stick_control（字段与机场3基本一致，
+ * stop/cancel两个是机场3没有的新方法，内部平台action码分别为10/11），以及内部平台接入的
+ * MOVE/TURN/CONTINUOUS_MOVE/STOP_MOVE action码。DRC链路管理(drc_mode_enter/exit/heart_beat)
+ * 和权限抢占(cloud_control_auth_*)不在本项目范围，由控制平台另一组实现
+ * （见设计文档第1节范围收窄说明），本模块不涉及。
  */
 class FlytoMain : public BaseModule
 {

@@ -58,7 +58,9 @@ enum class Action {
     TURN = 6,
     FLYTO_POINT,
     CONTINUOUS_MOVE = 8,
-    STOP_MOVE
+    STOP_MOVE,
+    FLYTO_POINT_STOP = 10,   // 内部平台action码，飞向目标点停止(DJI method: fly_to_point_stop)
+    RETURN_HOME_CANCEL = 11  // 内部平台action码，返航取消(DJI method: return_home_cancel)
 };
 
 enum class MoveMode {
@@ -94,8 +96,8 @@ enum class TurnMode {
  *   （不涉及真正断开DRC链路，那是控制平台的事），目前暂未挂到任何调用点上
  *   （设计文档第6节待确认事项3：是否需要补充新的停发信号，待定）。
  *
- * fly_to_point_stop/return_home_cancel（机场3没有的新方法）暂不实现，留到其它部分完成后再补充
- * （内部平台目前也没有触发这两个方法的action码）。
+ * fly_to_point_stop/return_home_cancel（机场3没有的新方法）：跟return_home一样简单，
+ * services下行、data为空；内部平台action码分别为10/11（2026-09确认），已接入m_actionHandlerMap。
  */
 class FlytoController {
 public:
@@ -112,6 +114,10 @@ private:
     // 处理起飞、返航指令
     void handleTakeoff();
     void handleGohome();
+    // 飞向目标点停止、返航取消（method: fly_to_point_stop/return_home_cancel），
+    // 跟return_home一样是无参数指令，data为空
+    void handleFlytoPointStop();
+    void handleReturnHomeCancel();
 
     void calculateTimingParameters(float distance, float speed,
                                    int& totalMs, int& fullCycles, int& remainingMs);

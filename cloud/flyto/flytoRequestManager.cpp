@@ -9,7 +9,9 @@ FlytoRequestManager::FlytoRequestManager() :
         {"takeoff_to_point",      "起飞响应"},
         {"return_home",           "返航响应"},
         {"fly_to_point",          "飞向目标点响应"},
-        {"fly_to_point_update",   "更新飞向目标点响应"}
+        {"fly_to_point_update",   "更新飞向目标点响应"},
+        {"fly_to_point_stop",     "飞向目标点停止响应"},
+        {"return_home_cancel",    "返航取消响应"}
     }
 {}
 

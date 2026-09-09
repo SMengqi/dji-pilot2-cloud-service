@@ -43,8 +43,7 @@
       `isCloudControlActive()` 检查目前被临时注释——真机测试发现 broker 不推送
       `thing/product/{aircraft_sn}/state` topic（DJI/broker 侧问题，非本项目代码问题），
       导致该检查永远拿不到值。等 broker 侧问题解决后需取消注释恢复三处检查。
-- [ ] `fly_to_point_stop`/`return_home_cancel` 未实现：内部平台目前没有触发这两个方法的 action 码，
-      待其余部分稳定后再补充
+- [ ] `fly_to_point_stop`/`return_home_cancel` 已实现（内部平台action码10/11），尚未真机联调验证
 - [ ] `drc_camera_screen_drag` 的 `locked` 写死 `true`（官方示例为 `false`）、相机变焦上限写死 112
       （官方范围可见光为 2~200），两处沿用机场3原有取值，是否需要调整待确认
 - [ ] `common/proto/bxt_cloud_common.proto` 里 `dock_sn` 字段的语义需要按Pilot2重新梳理（遥控器SN替代机场SN），

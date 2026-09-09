@@ -73,6 +73,8 @@ typedef enum {
     STATE_FLYTO_POINT,         // 飞向目标点
     STATE_FLYTO_CONTINUOUS_MOVE,                  // 持续移动
     STATE_FLYTO_STOP_MOVE,                        // 停止移动
+    STATE_FLYTO_POINT_STOP,                       // 飞向目标点停止
+    STATE_FLYTO_GO_HOME_CANCEL,                   // 返航取消
 
     STATE_CAMERA_ZOOM = 60,      // 相机变焦
 
@@ -102,6 +104,8 @@ typedef enum {
     STATE_FLYTO_POINT_FAILED,                     // 飞向目标点失败
     STATE_FLYTO_CONTINUOUS_MOVE_FAILED,           // 持续移动失败
     STATE_FLYTO_STOP_MOVE_FAILED,                 // 停止移动失败
+    STATE_FLYTO_POINT_STOP_FAILED,                // 飞向目标点停止失败
+    STATE_FLYTO_GO_HOME_CANCEL_FAILED,            // 返航取消失败
 
     STATE_CAMERA_ZOOM_FAILED = 350,               // 相机变焦失败
 

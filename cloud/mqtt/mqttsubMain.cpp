@@ -36,7 +36,8 @@ MqttSubMain::MqttSubMain(std::string strServer, std::string cliendId) :
         // 不归本项目实现，由控制平台另一组负责，故不在此路由（见设计文档第1节范围收窄说明）。
         {"takeoff_to_point",          [this](const std::string& payload) { handleFlytoResult(payload); }},
         {"return_home",               [this](const std::string& payload) { handleFlytoResult(payload); }},
-        // return_home_cancel/fly_to_point_stop（机场3没有的新方法）暂不实现，留到其它部分完成后再补充。
+        {"return_home_cancel",        [this](const std::string& payload) { handleFlytoResult(payload); }},
+        {"fly_to_point_stop",         [this](const std::string& payload) { handleFlytoResult(payload); }},
         {"fly_to_point",              [this](const std::string& payload) { handleFlytoResult(payload); }},
         {"fly_to_point_update",       [this](const std::string& payload) { handleFlytoResult(payload); }},
         {"fly_to_point_progress",     [this](const std::string& payload) { handleFlytoProgress(payload); }},

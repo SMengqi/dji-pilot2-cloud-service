@@ -95,7 +95,9 @@ FlytoController::FlytoController(FlytoRequestManager& request)
         {static_cast<int>(Action::TURN),    [this](dji_cloud::flight_control_message& msg) { handleTurn(msg); }},
         {static_cast<int>(Action::FLYTO_POINT), [this](dji_cloud::flight_control_message& msg) { handleFlytoPoint(msg); }},
         {static_cast<int>(Action::CONTINUOUS_MOVE), [this](dji_cloud::flight_control_message& msg) { handleContinuousMove(msg); }},
-        {static_cast<int>(Action::STOP_MOVE), [this](dji_cloud::flight_control_message& msg) { handleStopMove(msg); }}
+        {static_cast<int>(Action::STOP_MOVE), [this](dji_cloud::flight_control_message& msg) { handleStopMove(msg); }},
+        {static_cast<int>(Action::FLYTO_POINT_STOP), [this]() { handleFlytoPointStop(); }},
+        {static_cast<int>(Action::RETURN_HOME_CANCEL), [this]() { handleReturnHomeCancel(); }}
     },
     m_requestManager(request)
 {}
@@ -289,6 +291,64 @@ void FlytoController::handleGohome()
 
     uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_GO_HOME);
     uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_GO_HOME_FAILED);
+    sendResult(successCode, failedCode, ret, log, errResult);
+
+    setUavControlMode(E_BxtUavControlMode::IDLE);
+    pl_log(INF, "更新控制状态 | mode: %s", getControlModeDesc());
+}
+
+/**
+ * @brief 处理 飞向目标点停止 (method: fly_to_point_stop)，内部平台action码=10
+ *
+ * data为空，跟handleGohome()是同一种"无参数指令"模式
+ */
+void FlytoController::handleFlytoPointStop()
+{
+    dji_cloud::services_down message;
+    std::string tid = generate_uuid();
+    message.set_tid(tid);
+    message.set_bid(generate_uuid());
+    message.set_timestamp(get_milliseconds());
+    message.set_method("fly_to_point_stop");
+
+    dji_cloud::request_data* empty_data = message.mutable_data();
+
+    std::string log = "飞向目标点停止";
+    uint32_t msgId = DJI_SERVICES_PUBLISH_DATA_IND;
+    std::string errResult;
+    bool ret = m_requestManager.sendRequestAndWait(message, tid, msgId, log, errResult);
+
+    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_POINT_STOP);
+    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_POINT_STOP_FAILED);
+    sendResult(successCode, failedCode, ret, log, errResult);
+
+    setUavControlMode(E_BxtUavControlMode::IDLE);
+    pl_log(INF, "更新控制状态 | mode: %s", getControlModeDesc());
+}
+
+/**
+ * @brief 处理 返航取消 (method: return_home_cancel)，内部平台action码=11
+ *
+ * data为空，跟handleGohome()是同一种"无参数指令"模式
+ */
+void FlytoController::handleReturnHomeCancel()
+{
+    dji_cloud::services_down message;
+    std::string tid = generate_uuid();
+    message.set_tid(tid);
+    message.set_bid(generate_uuid());
+    message.set_timestamp(get_milliseconds());
+    message.set_method("return_home_cancel");
+
+    dji_cloud::request_data* empty_data = message.mutable_data();
+
+    std::string log = "返航取消";
+    uint32_t msgId = DJI_SERVICES_PUBLISH_DATA_IND;
+    std::string errResult;
+    bool ret = m_requestManager.sendRequestAndWait(message, tid, msgId, log, errResult);
+
+    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_GO_HOME_CANCEL);
+    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_GO_HOME_CANCEL_FAILED);
     sendResult(successCode, failedCode, ret, log, errResult);
 
     setUavControlMode(E_BxtUavControlMode::IDLE);
@@ -963,7 +1023,8 @@ bool FlytoController::ensureFlightControlAndMode()
  *
  * 使用json_to_proto工具将JSON转换为protobuf格式；
  * 通过std::visit和std::variant实现多态函数调用；
- * action取值范围：TAKEOFF=1, GOHOME=3, MOVE=4, TURN=6, FLYTO_POINT=7, CONTINUOUS_MOVE=8, STOP_MOVE=9
+ * action取值范围：TAKEOFF=1, GOHOME=3, MOVE=4, TURN=6, FLYTO_POINT=7, CONTINUOUS_MOVE=8, STOP_MOVE=9,
+ * FLYTO_POINT_STOP=10, RETURN_HOME_CANCEL=11
  * （机场3的LAND=2这次不启用——大疆官方接口本身不支持独立降落指令）。
  *
  * @param msg 包含飞行控制指令的JSON字符串
@@ -993,7 +1054,7 @@ void FlytoController::handleFlightControl(const std::string& msg)
         return;
     }
 
-    constexpr std::array<int, 7> valid_actions = {1, 3, 4, 6, 7, 8, 9};
+    constexpr std::array<int, 9> valid_actions = {1, 3, 4, 6, 7, 8, 9, 10, 11};
     if (std::find(valid_actions.begin(), valid_actions.end(), action) == valid_actions.end()) {
         pl_log(ERR, "非法action值: %d", action);
         handleUavResult(failedCode, "飞行控制失败非法action值", 1);
