@@ -11,8 +11,6 @@
 #include <vector>
 #include <unordered_map>
 
-extern bool s_reconnectFlag;
-
 class MqttSubMain : public MqttClient
 {
 public:

@@ -113,12 +113,11 @@ S32 mqttpub_init(U32 ulModuleId)
     s_mqttPub = new MqttPubMain(s_pbMqttCfg.server_address(), s_pbMqttCfg.pub_client_id());
     s_mqttPub->setMqttOptions();
     s_mqttPub->setMqttUserAndPasswd(s_pbMqttCfg.user_name(), s_pbMqttCfg.password());
-    s_mqttPub->connect();
-
-    if(s_mqttPub->isConnected()) {
+    // 首次连接失败不阻塞初始化, publish()时会按需重连
+    if (s_mqttPub->connect()) {
         pl_log(INF, "mqtt client connect success");
     } else {
-        pl_log(ERR, "mqtt client connect failed");
+        pl_log(ERR, "mqtt client connect failed, will reconnect on publish");
     }
 
     bxt_mqtt::mqtt_publish* pbMqttPublish = s_pbMqttCfg.mutable_publish();

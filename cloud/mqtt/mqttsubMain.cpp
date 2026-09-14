@@ -10,6 +10,9 @@
 #include <fstream>
 
 /* Private constants ---------------------------------------------------------*/
+#define SUB_RECONNECT_INTERVAL_SEC      5
+#define SUB_CONNECT_CHECK_INTERVAL_SEC  2
+#define SUB_RECONNECT_LOG_EVERY         12
 
 /* Exported values -----------------------------------------------------------*/
 extern bxt_mqtt::mqtt_config_data s_pbMqttCfg;
@@ -241,23 +244,34 @@ void mqttsub_entry(pf_addrword_t mid)
     });
 
     mqttsub.setMqttUserAndPasswd(s_pbMqttCfg.user_name(), s_pbMqttCfg.password());
-    mqttsub.connect();
 
-    if (mqttsub.isConnected()) {
-        pl_log(INF, "mqtt sub client is connected");
-        if (mqttsub.subscribeTopics() != PF_RET_SUCCESS) {
-            pl_log(ERR, "订阅topics失败");
-        }
-    } else {
-        pl_log(ERR, "mqtt sub client is not connected");
-        s_reconnectFlag = true;
-    }
-
+    // 首次连接和断线重连走同一条路径: 未连接就重连, 连上后重新订阅(clean_session下订阅不会保留)
+    bool wasConnected = false;
+    U32 ulRetryCnt = 0;
     while (1) {
-        if (s_reconnectFlag && mqttsub.isConnected()) {
-            mqttsub.subscribeTopics();
-            s_reconnectFlag = false;
+        if (!mqttsub.isConnected()) {
+            if (wasConnected) {
+                pl_log(ERR, "mqtt sub client connection lost, reconnecting...");
+                wasConnected = false;
+            }
+            if (mqttsub.connect()) {
+                pl_log(INF, "mqtt sub client is connected after %u retries", ulRetryCnt);
+                if (mqttsub.subscribeTopics() != PF_RET_SUCCESS) {
+                    pl_log(ERR, "订阅topics失败");
+                }
+                wasConnected = true;
+                ulRetryCnt = 0;
+            } else {
+                // broker长时间不可用时只每分钟记一次, 避免刷日志
+                if (ulRetryCnt % SUB_RECONNECT_LOG_EVERY == 0) {
+                    pl_log(ERR, "mqtt sub client connect failed (retry %u), retry every %ds",
+                           ulRetryCnt, SUB_RECONNECT_INTERVAL_SEC);
+                }
+                ulRetryCnt++;
+                pf_usleep(SUB_RECONNECT_INTERVAL_SEC * 1000000);
+                continue;
+            }
         }
-        pf_usleep(2000000);
+        pf_usleep(SUB_CONNECT_CHECK_INTERVAL_SEC * 1000000);
     }
 }

@@ -3,6 +3,7 @@
 #define INCLUDE_MQTTCLIENT_H_
 
 #include <atomic>
+#include <chrono>
 #include <string>
 #include <functional>
 #include "mqtt/async_client.h"
@@ -25,29 +26,12 @@ public:	// override function
 public:
 	void setOnReadCallback(f_onRead_CB onRead_CB);
 
-private:	// normal function
-	void reconnect();
-
 private:
 	mqtt::async_client& m_client;
 	mqtt::connect_options& m_options;
-	int m_nRetry;
 
 	f_onRead_CB m_onRead_CB;
 };
-
-//class DeliveryActionListener: public ActionListener
-//{
-//public:
-//	DeliveryActionListener();
-//	bool is_done() const;
-//private:
-//	std::atomic<bool> m_done;
-//	void on_failure(const mqtt::token& tok) override;
-//	void on_success(const mqtt::token& tok) override;
-//};
-
-// subscriber
 
 class MqttClient
 {
@@ -58,6 +42,7 @@ public:
 public:
 	void setMqttOptions();
 	void setMqttUserAndPasswd(std::string user, std::string passwd);
+	// 同步连接, 成功返回true; 失败返回false, 调用方负责重试
 	bool connect();
 
 	void subscribe(const std::string& strTopic, const int& ulQos = 0);
@@ -72,15 +57,13 @@ public:
 private:
 	std::string m_strServer;
 	std::string m_clientId;
-//	bool m_subFlag;	// false: publish; true: subscribe
 
 private:
-	//声明一个MQTTClient
 	mqtt::async_client m_client;
 	Callback m_callback;
-	//初始化MQTT Client选项
 	mqtt::connect_options m_connOpts;
-	//#define MQTTClient_message_initializer { {'M', 'Q', 'T', 'M'}, 0, 0, NULL, 0, 0, 0, 0 }
 	mqtt::message_ptr m_pubMsg;
+	// publish时断线重连的节流时间戳
+	std::chrono::steady_clock::time_point m_lastConnectTry;
 };
 #endif /* INCLUDE_MQTTCLIENT_H_ */
