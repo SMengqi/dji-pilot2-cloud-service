@@ -408,7 +408,6 @@ bool FlytoController::commonControlSend(const FlightControlOffset& offset)
     p_data->set_roll(center + offset.roll);
     p_data->set_pitch(center + offset.pitch);
     p_data->set_yaw(center + offset.yaw);
-    p_data->set_gimbal_pitch(center);
 
     std::string jsonStr;
     jsonStr = pb2json(message);
