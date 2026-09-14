@@ -43,7 +43,9 @@ private:
     PayloadRequestManager& m_requestManager;
 
     const float m_zoomFactorMin = 2.0f;
-    const float m_zoomFactorMax = 112.0f;
+    // M400挂载相机禅思H30T规格（https://enterprise.dji.com/cn/zenmuse-h30-series/specs）：
+    // 34x混合光学变焦，含数码变焦总上限400x，此处按总变焦上限取值。
+    const float m_zoomFactorMax = 400.0f;
 
     float m_currentZoomFactor;
     std::string m_payloadIndex;

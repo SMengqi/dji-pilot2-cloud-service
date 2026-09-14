@@ -38,14 +38,22 @@
 
 四个业务模块已实现完成并经过真机联调（详见 `docs/design/interface-porting-design.md` 第7/8节），剩余待办：
 
-- [ ] **恢复 `control_source` 云端控制权校验**：`cloud/flyto/flytoController.cpp`、
+- [ ] **`control_source` 云端控制权校验的替代方案待定**：`cloud/flyto/flytoController.cpp`、
       `cloud/payload/gimbalController.cpp`、`cloud/payload/cameraController.cpp` 里的
-      `isCloudControlActive()` 检查目前被临时注释——真机测试发现 broker 不推送
-      `thing/product/{aircraft_sn}/state` topic（DJI/broker 侧问题，非本项目代码问题），
-      导致该检查永远拿不到值。等 broker 侧问题解决后需取消注释恢复三处检查。
-- [ ] `fly_to_point_stop`/`return_home_cancel` 已实现（内部平台action码10/11），尚未真机联调验证
-- [ ] `drc_camera_screen_drag` 的 `locked` 写死 `true`（官方示例为 `false`）、相机变焦上限写死 112
-      （官方范围可见光为 2~200），两处沿用机场3原有取值，是否需要调整待确认
+      `isCloudControlActive()` 检查目前仍被注释。真机测试（详见
+      `docs/design/interface-porting-design.md` 8.14节，2026-09-09）确认问题比最初认为的更严重：
+      不只是 broker 不推送 `thing/product/{aircraft_sn}/state` topic，即使收到该消息，
+      `control_source` 字段值本身也不可信——控制权已在云端时字段仍显示物理设备"A"。
+      **用户结论：这条判断路径不可行，此功能方向不会再用这种方式实现**；如果将来仍需要云端控制权校验能力，
+      需要控制平台组换一种方式告知状态，而不是恢复现有的注释代码。
+- [x] `fly_to_point_stop`/`return_home_cancel`（内部平台action码10/11）已真机联调验证通过
+      （详见 `docs/design/interface-porting-design.md` 8.12/8.14节，2026-09-09）
+- [ ] `drc_camera_screen_drag` 的 `locked` 写死 `true`（官方示例为 `false`），沿用机场3原有取值，是否需要调整待确认
+- [x] 相机变焦上限已从写死的 `112`（来源不明，凑巧与内部平台协议`dji_cloud_api.proto`里
+      `zoom_factor`字段声明的输入范围`{"max":"112.0"}`数值相同，但那是内部协议自身声明，
+      与挂载相机真实能力无关）改为 `400`：依据M400挂载的禅思H30T官方规格
+      （https://enterprise.dji.com/cn/zenmuse-h30-series/specs ，34x混合光学变焦、
+      含数码变焦总上限400x），按总变焦上限取值，`cloud/payload/cameraController.h`
 - [ ] `common/proto/bxt_cloud_common.proto` 里 `dock_sn` 字段的语义需要按Pilot2重新梳理（遥控器SN替代机场SN），
       目前 `cloud/mqtt/mqttsubMain.cpp` 里仍暂用这个字段名，已标 TODO
 - [ ] 未纳入 SVN，确定要长期维护时再决定入库路径
