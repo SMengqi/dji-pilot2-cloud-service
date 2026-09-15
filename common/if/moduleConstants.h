@@ -67,7 +67,9 @@ namespace Distance {
  * @brief 控制周期相关常量
  */
 namespace ControlCycle {
-    constexpr int CYCLE_DURATION_MS = 200;             ///< 控制周期时长（毫秒）
+    // 官方"DRC-杆量控制"接口要求发送频率保持5-10Hz才能精准控制；原200ms(5Hz)卡在区间下限，
+    // 联调反馈速度不准/不稳，改为143ms(约7Hz)。
+    constexpr int CYCLE_DURATION_MS = 143;             ///< 控制周期时长（毫秒）
     constexpr int CHECK_INTERVAL_MS = 100;             ///< 检查间隔（毫秒）
     constexpr int CHECK_COUNT_PER_CYCLE = 2;           ///< 每个周期的检查次数
 }
