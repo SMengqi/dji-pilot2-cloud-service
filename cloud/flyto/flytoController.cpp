@@ -89,7 +89,7 @@ float axisMaxSpeed(MoveMode mode)
 
 FlytoController::FlytoController(FlytoRequestManager& request)
     : m_actionHandlerMap{
-        {static_cast<int>(Action::TAKEOFF), [this]() { handleTakeoff(); }},
+        {static_cast<int>(Action::TAKEOFF), [this](dji_cloud::flight_control_message& msg) { handleTakeoff(msg); }},
         {static_cast<int>(Action::GOHOME),  [this]() { handleGohome(); }},
         {static_cast<int>(Action::MOVE),    [this](dji_cloud::flight_control_message& msg) { handleMove(msg); }},
         {static_cast<int>(Action::TURN),    [this](dji_cloud::flight_control_message& msg) { handleTurn(msg); }},
@@ -220,14 +220,12 @@ void FlytoController::handleFlytoProgress(const std::string& msg)
 /**
  * @brief 一键起飞 消息封装、发布
  */
-void FlytoController::handleTakeoff()
+void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
 {
     bxt_cloud_common::takeoff_message* p_takeoff_msg = s_pbCommonCfg.mutable_takeoff();
-    bxt_cloud_common::simulate_message* p_simulateCfg = s_pbCommonCfg.mutable_simulate();
 
     dji_cloud::services_down message;
     dji_cloud::request_data* p_data = message.mutable_data();
-    dji_cloud::simulate_message* p_simulate = p_data->mutable_simulate_mission();
 
     std::string tid = generate_uuid();
     message.set_tid(tid);
@@ -235,8 +233,8 @@ void FlytoController::handleTakeoff()
     message.set_timestamp(get_milliseconds());
     message.set_method("takeoff_to_point");
 
-    p_data->set_target_latitude(p_simulateCfg->latitude());
-    p_data->set_target_longitude(p_simulateCfg->longitude());
+    p_data->set_target_latitude(msg.latitude());
+    p_data->set_target_longitude(msg.longitude());
     p_data->set_target_height(p_takeoff_msg->commander_flight_height());
     p_data->set_security_takeoff_height(p_takeoff_msg->commander_flight_height());
 
@@ -249,10 +247,6 @@ void FlytoController::handleTakeoff()
     p_data->set_flight_id("01234567890");
     p_data->set_max_speed(p_takeoff_msg->max_speed());
     p_data->set_flight_safety_advance_check(p_takeoff_msg->flight_safety_advance_check());
-
-    p_simulate->set_is_enable(p_simulateCfg->is_enable());
-    p_simulate->set_latitude(p_simulateCfg->latitude());
-    p_simulate->set_longitude(p_simulateCfg->longitude());
 
     std::string log = "一键起飞";
     uint32_t msgId = DJI_SERVICES_PUBLISH_DATA_IND;
