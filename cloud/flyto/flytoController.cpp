@@ -89,7 +89,7 @@ float axisMaxSpeed(MoveMode mode)
 
 FlytoController::FlytoController(FlytoRequestManager& request)
     : m_actionHandlerMap{
-        {static_cast<int>(Action::TAKEOFF), [this](dji_cloud::flight_control_message& msg) { handleTakeoff(msg); }},
+        {static_cast<int>(Action::TAKEOFF), [this]() { handleTakeoff(); }},
         {static_cast<int>(Action::GOHOME),  [this]() { handleGohome(); }},
         {static_cast<int>(Action::MOVE),    [this](dji_cloud::flight_control_message& msg) { handleMove(msg); }},
         {static_cast<int>(Action::TURN),    [this](dji_cloud::flight_control_message& msg) { handleTurn(msg); }},
@@ -220,27 +220,12 @@ void FlytoController::handleFlytoProgress(const std::string& msg)
 /**
  * @brief 一键起飞 消息封装、发布
  */
-void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
+void FlytoController::handleTakeoff()
 {
-    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF);
-    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF_FAILED);
-
-    // target_latitude/target_longitude 现在直接取自内部平台下发的flight_control_message，
-    // 是optional字段——平台不下发时会拿到proto默认值0.0（赤道/本初子午线），不能当作合法坐标
-    // 直接发给真机；官方接口定义范围：latitude[-90,90]，longitude[-180,180]。
-    if (!msg.has_latitude() || !msg.has_longitude()) {
-        pl_log(ERR, "一键起飞缺少目标经纬度参数");
-        sendResult(successCode, failedCode, false, "一键起飞", "缺少目标经纬度参数");
-        return;
-    }
-    if (msg.latitude() < -90.0 || msg.latitude() > 90.0 ||
-        msg.longitude() < -180.0 || msg.longitude() > 180.0) {
-        pl_log(ERR, "一键起飞目标经纬度超出范围 | latitude=%f, longitude=%f", msg.latitude(), msg.longitude());
-        sendResult(successCode, failedCode, false, "一键起飞", "目标经纬度超出范围");
-        return;
-    }
-
     bxt_cloud_common::takeoff_message* p_takeoff_msg = s_pbCommonCfg.mutable_takeoff();
+
+    // 一键起飞原地上升，目标点直接取飞行器当前遥测位置，不需要内部平台额外下发目标经纬度
+    Point currentPos = TrackMain::getInstance().getUavPoint();
 
     dji_cloud::services_down message;
     dji_cloud::request_data* p_data = message.mutable_data();
@@ -251,8 +236,8 @@ void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
     message.set_timestamp(get_milliseconds());
     message.set_method("takeoff_to_point");
 
-    p_data->set_target_latitude(msg.latitude());
-    p_data->set_target_longitude(msg.longitude());
+    p_data->set_target_latitude(currentPos.lat);
+    p_data->set_target_longitude(currentPos.lon);
     p_data->set_target_height(p_takeoff_msg->commander_flight_height());
     p_data->set_security_takeoff_height(p_takeoff_msg->commander_flight_height());
 
@@ -271,6 +256,8 @@ void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
     std::string errResult;
     bool ret = m_requestManager.sendRequestAndWait(message, tid, msgId, log, errResult);
 
+    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF);
+    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF_FAILED);
     sendResult(successCode, failedCode, ret, log, errResult);
 }
 

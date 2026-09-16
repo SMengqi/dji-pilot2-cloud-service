@@ -112,7 +112,7 @@ private:
     void sendResult(uint16_t successCode, uint16_t failedCode, bool ret,
                     const std::string& log, const std::string& errResult);
     // 处理起飞、返航指令
-    void handleTakeoff(dji_cloud::flight_control_message& msg);
+    void handleTakeoff();
     void handleGohome();
     // 飞向目标点停止、返航取消（method: fly_to_point_stop/return_home_cancel），
     // 跟return_home一样是无参数指令，data为空
