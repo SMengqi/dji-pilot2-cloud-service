@@ -222,6 +222,24 @@ void FlytoController::handleFlytoProgress(const std::string& msg)
  */
 void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
 {
+    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF);
+    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF_FAILED);
+
+    // target_latitude/target_longitude 现在直接取自内部平台下发的flight_control_message，
+    // 是optional字段——平台不下发时会拿到proto默认值0.0（赤道/本初子午线），不能当作合法坐标
+    // 直接发给真机；官方接口定义范围：latitude[-90,90]，longitude[-180,180]。
+    if (!msg.has_latitude() || !msg.has_longitude()) {
+        pl_log(ERR, "一键起飞缺少目标经纬度参数");
+        sendResult(successCode, failedCode, false, "一键起飞", "缺少目标经纬度参数");
+        return;
+    }
+    if (msg.latitude() < -90.0 || msg.latitude() > 90.0 ||
+        msg.longitude() < -180.0 || msg.longitude() > 180.0) {
+        pl_log(ERR, "一键起飞目标经纬度超出范围 | latitude=%f, longitude=%f", msg.latitude(), msg.longitude());
+        sendResult(successCode, failedCode, false, "一键起飞", "目标经纬度超出范围");
+        return;
+    }
+
     bxt_cloud_common::takeoff_message* p_takeoff_msg = s_pbCommonCfg.mutable_takeoff();
 
     dji_cloud::services_down message;
@@ -253,8 +271,6 @@ void FlytoController::handleTakeoff(dji_cloud::flight_control_message& msg)
     std::string errResult;
     bool ret = m_requestManager.sendRequestAndWait(message, tid, msgId, log, errResult);
 
-    uint16_t successCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF);
-    uint16_t failedCode = static_cast<uint16_t>(STATE_FLYTO_TAKE_OFF_FAILED);
     sendResult(successCode, failedCode, ret, log, errResult);
 }
 
