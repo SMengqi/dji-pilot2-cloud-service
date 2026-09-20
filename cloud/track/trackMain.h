@@ -64,6 +64,8 @@ private:
     void packPayloadParam();
     // 解析飞行器属性state消息
     bool parseStateMsg(const std::string& msg);
+    // 根据 mode_code 变化检测"空中 -> 地面"落地事件，落地后向内部平台上报"飞行任务结束"(code 8)
+    void detectLanding(int prevModeCode, int modeCode);
 
 private:
     struct BatteryInfo {
@@ -101,6 +103,8 @@ private:
     std::atomic<int> m_uavModeCode{-1};
     // 云端是否持有控制权（原子，跨线程读写安全；新成员追加末尾，避免改变已有成员偏移）
     std::atomic<bool> m_cloudControlActive{false};
+    // 飞机是否处于空中（由 mode_code 推断），用于识别落地时刻；只在 osd 解析线程读写
+    bool m_airborne = false;
 };
 
 #endif /*TRACKMAIN_H_*/

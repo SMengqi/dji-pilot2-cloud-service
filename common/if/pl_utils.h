@@ -61,7 +61,7 @@ typedef enum {
     STATE_WAYPOINT_UNDO,      // 停止航线
     STATE_WAYPOINT_INDEX,     // 航线索引
     STATE_WAYPOINT_INTERRUPT, // 中断航线
-    STATE_WAYPOINT_END,       // 航线结束
+    STATE_WAYPOINT_END,       // 飞行任务结束（不限航线：手控/返航落地后同样上报，云端据此重置任务状态）
     STATE_WAYPOINT_THROW,     // 抛投
     STATE_WAYPOINT_THROW_END_TURN_BACK, // 抛投后返航
 

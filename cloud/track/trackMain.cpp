@@ -75,6 +75,7 @@ bool TrackMain::parseOsdMsg(const std::string& msg)
     int prevModeCode = m_uavModeCode.exchange(modeCode);
     if (modeCode != prevModeCode) {
         pl_log(INF, "飞机飞行模式变化 | mode_code: %d -> %d", prevModeCode, modeCode);
+        detectLanding(prevModeCode, modeCode);
     }
 
     const Json::Value& battery = data["battery"];
@@ -133,6 +134,41 @@ bool TrackMain::parseOsdMsg(const std::string& msg)
     }
 
     return true;
+}
+
+/**
+ * @brief 根据 mode_code 变化检测落地，落地后上报"飞行任务结束"(code 8)
+ *
+ * Pilot2 没有机场的 flighttask_step_code，落地只能从飞行器 osd 的 mode_code 推断：
+ *   地面态：0 待机 / 1 起飞准备 / 2 起飞准备完毕
+ *   空中态：3 手动 / 4 自动起飞 / 5 航线 / 6 全景 / 7 智能跟随 / 8 ADS-B 躲避 / 9 自动返航 /
+ *           10 自动降落 / 11 强制降落 / 12 三桨叶降落 / 15 APAS / 16 虚拟摇杆 / 17 指令飞行 /
+ *           18 空中RTK收敛 / 19 机场选址 / 20 POI 环绕
+ *   其他（13 升级中 / 14 未连接 / -1 未知）不改变空中标志，避免中途断连再恢复时误判。
+ * 不区分触发来源（接口返航 / 遥控器手动 / 低电自动返航 / 手飞降落），只要观测到
+ * "空中 -> 地面"就上报一次；云端靠这条消息重置任务状态，语义与机场3的 code 8 一致。
+ * 进程启动时 -1 -> 0 不会触发（从未起飞）。
+ */
+void TrackMain::detectLanding(int prevModeCode, int modeCode)
+{
+    auto isGround = [](int code) { return code >= 0 && code <= 2; };
+    auto isAirborne = [](int code) {
+        return (code >= 3 && code <= 12) || (code >= 15 && code <= 20);
+    };
+
+    if (isAirborne(modeCode)) {
+        if (!m_airborne) {
+            pl_log(INF, "飞机已离地 | mode_code: %d -> %d", prevModeCode, modeCode);
+        }
+        m_airborne = true;
+        return;
+    }
+
+    if (isGround(modeCode) && m_airborne) {
+        m_airborne = false;
+        pl_log(INF, "飞机已落地 | mode_code: %d -> %d, 上报飞行任务结束", prevModeCode, modeCode);
+        handleFlightStatus(static_cast<uint16_t>(STATE_WAYPOINT_END), "飞行任务结束", false);
+    }
 }
 
 void TrackMain::packFlightInfo(void)
